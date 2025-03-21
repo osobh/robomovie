@@ -136,7 +136,9 @@ export const useStore = create<Store>((set, get) => ({
       auth: {
         ...state.auth,
         isSuccess,
-        error: null
+        isLogin: isSuccess ? true : state.auth.isLogin, // Switch to login mode on success
+        error: null,
+        user: isSuccess ? null : state.auth.user // Clear user on signup success
       }
     }));
   },

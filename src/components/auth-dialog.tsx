@@ -29,55 +29,38 @@ export function AuthDialog() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Clear any existing session when mounting in signup mode
+  // Handle navigation after successful login
   useEffect(() => {
-      console.log('Auth dialog mounted, ensuring no session exists');
-      supabase.auth.signOut();
-  }, [isLogin]); // Run whenever isLogin changes
-
-  // Handle navigation when auth state changes
-  useEffect(() => {
-    console.log('Auth state changed:', { isAuthenticated, isLogin });
     if (isAuthenticated && isLogin) {
-      console.log('Navigating to dashboard');
       navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, isLogin, navigate]);
 
-    useEffect(() => {
+  // Handle signup success
+  useEffect(() => {
     if (isSuccess) {
-      console.log('Signup successful, redirecting to login');
       setAuthMode(true); // Switch to login mode
+      setPassword(''); // Clear password but keep email for convenience
     }
   }, [isSuccess, setAuthMode]);
 
-
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Handling auth submit:', { isLogin, email });
-
     try {
       if (isLogin) {
-        console.log('Attempting login');
         await login(email, password);
-        console.log('Login successful, auth state:', useStore.getState().auth);
       } else {
-        console.log('Attempting signup');
         await signup(email, password);
-        console.log('Signup successful');
-        // No longer setting email/password to '' here, as we redirect
       }
     } catch (err) {
-      console.error('Auth error in component:', err);
+      console.error('Auth error:', err);
     }
   };
 
   const switchMode = () => {
-    console.log('Switching auth mode from:', isLogin);
     setAuthMode(!isLogin);
     setPassword('');
     setEmail('');
-    console.log('Auth mode switched to:', !isLogin);
   };
 
   return (
