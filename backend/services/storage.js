@@ -6,6 +6,7 @@ const STORAGE_BASE = path.join(process.cwd(), 'storage');
 const SCRIPTS_DIR = path.join(STORAGE_BASE, 'scripts');
 const SCREENPLAYS_DIR = path.join(STORAGE_BASE, 'screenplays');
 const METADATA_DIR = path.join(STORAGE_BASE, 'metadata');
+const STORYBOARDS_DIR = path.join(STORAGE_BASE, 'storyboards');
 
 // Initialize storage directories
 export async function initializeStorage() {
@@ -18,6 +19,8 @@ export async function initializeStorage() {
     await fs.mkdir(SCREENPLAYS_DIR, { recursive: true });
     // Create metadata directory
     await fs.mkdir(METADATA_DIR, { recursive: true });
+    // Create storyboards directory
+    await fs.mkdir(STORYBOARDS_DIR, { recursive: true });
   } catch (error) {
     console.error('Error initializing storage directories:', error);
     throw error;
@@ -36,6 +39,9 @@ async function ensureUserDirectory(userId, type = 'scripts') {
       break;
     case 'metadata':
       baseDir = METADATA_DIR;
+      break;
+    case 'storyboards':
+      baseDir = STORYBOARDS_DIR;
       break;
     default:
       baseDir = SCRIPTS_DIR;
@@ -174,6 +180,26 @@ export async function listUserScripts(userId) {
 }
 
 // Delete a script and its metadata
+// Save storyboard data
+export async function saveStoryboard(userId, scriptId, storyboardData) {
+  try {
+    const userDir = await ensureUserDirectory(userId, 'storyboards');
+    const fileName = `${scriptId}_storyboard.json`;
+    const filePath = path.join(userDir, fileName);
+
+    // Write storyboard data to file
+    await fs.writeFile(filePath, JSON.stringify(storyboardData, null, 2), 'utf8');
+
+    return {
+      fileName,
+      filePath: path.relative(process.cwd(), filePath)
+    };
+  } catch (error) {
+    console.error('Error saving storyboard:', error);
+    throw error;
+  }
+}
+
 export async function deleteScript(userId, fileName) {
   try {
     const userScriptsDir = await ensureUserDirectory(userId, 'scripts');

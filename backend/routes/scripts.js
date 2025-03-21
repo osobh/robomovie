@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { saveScript, deleteScript } from '../services/storage.js';
+import { saveScript, deleteScript, readScript } from '../services/storage.js';
 
 const router = Router();
 
@@ -44,6 +44,28 @@ router.delete('/scripts/delete/:userId/:fileId', async (req, res) => {
   } catch (error) {
     console.error('Error deleting script:', error);
     res.status(500).json({ error: 'Failed to delete script' });
+  }
+});
+
+// Get script content endpoint
+router.get('/scripts/script-content/:userId/:fileId', async (req, res) => {
+  try {
+    const { userId, fileId } = req.params;
+
+    // Validate required parameters
+    if (!userId || !fileId) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+        required: { userId, fileId }
+      });
+    }
+
+    // Read script content
+    const scriptData = await readScript(userId, fileId);
+    res.json(scriptData);
+  } catch (error) {
+    console.error('Error reading script:', error);
+    res.status(500).json({ error: 'Failed to read script' });
   }
 });
 

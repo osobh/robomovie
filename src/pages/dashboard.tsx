@@ -1,14 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FileText, Film, Music, Clock, AlertCircle, Plus } from 'lucide-react';
+import { FileText, Film, Music, Clock, AlertCircle } from 'lucide-react';
 import { useServerStatus } from '@/lib/hooks/use-server-status';
 import { useAuth } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import {
-  Dialog,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { CreateMovieDialog } from '@/components/create-movie-dialog';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -43,7 +36,6 @@ function StatCard({ icon: Icon, label, value, color }: {
 }
 
 export function Dashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const isServerRunning = useServerStatus();
   const [stats, setStats] = useState<Stats>({
@@ -53,7 +45,6 @@ export function Dashboard() {
     processingTime: 0
   });
   const [error, setError] = useState<string | null>(null);
-  const [isCreateMovieOpen, setIsCreateMovieOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -83,11 +74,6 @@ export function Dashboard() {
   }, [isServerRunning, user]);
 
 
-
-  const handleMovieCreated = () => {
-    // Close the dialog first to prevent any state issues
-    setIsCreateMovieOpen(false);
-  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -137,37 +123,9 @@ export function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="bg-[#1A1A1A] rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Activity Timeline</h2>
-            <p className="text-gray-400">No recent activity</p>
-          </div>
-          
-          <div className="bg-[#1A1A1A] rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Create New Movie</h2>
-            <p className="text-gray-400 mb-6">Start your creative journey by creating a new movie project.</p>
-            
-            <Dialog open={isCreateMovieOpen} onOpenChange={setIsCreateMovieOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Movie
-                </Button>
-              </DialogTrigger>
-              <CreateMovieDialog onClose={handleMovieCreated} navigate={navigate} />
-            </Dialog>
-          </div>
-          <div className="bg-[#1A1A1A] rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Create Content</h2>
-            <p className="text-gray-400 mb-6">Create engaging short-form social media videos ranging from 30 seconds to 1 minute.</p>
-            
-            <Button className="w-full bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Content
-            </Button>
-          </div>
-        </div>
+      <div className="bg-[#1A1A1A] rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-white mb-4">Activity Timeline</h2>
+        <p className="text-gray-400">No recent activity</p>
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Play, Settings, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react';
 import { useServerStatus } from '@/lib/hooks/use-server-status';
 import { useWorkflow } from '@/lib/workflow';
+import { useStore } from '@/lib/store';
 import {
   Dialog,
   DialogContent,
@@ -10,36 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-interface Scene {
-  title: string;
-  sceneNumber: number;
-  location: string;
-  timeOfDay: string;
-  characters: string[];
-  description: string;
-  shots: {
-    number: number;
-    angle: string;
-    movement: string;
-    composition: string;
-    action: string;
-    effects: string;
-    lighting: string;
-  }[];
-  technicalRequirements: {
-    equipment: string[];
-    vfx: string[];
-    practicalEffects: string[];
-    props: string[];
-    safety: string[];
-  };
-  emotionalContext: {
-    characterEmotions: Record<string, string>;
-    mood: string;
-    colorPalette: string[];
-    soundCues: string[];
-  };
-}
+// Import Scene type from store to ensure consistency
+import type { Scene } from '@/lib/store';
 
 interface SceneModalProps {
   scene: Scene;
@@ -79,7 +53,7 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
         <div>
           <h3 className="text-lg font-semibold text-[#FFA500] mb-2">Shot List</h3>
           <div className="space-y-4">
-            {scene.shots.map((shot) => (
+            {scene.shots.map((shot: Scene['shots'][0]) => (
               <div key={shot.number} className="bg-[#2A2A2A] p-4 rounded-lg">
                 <h4 className="font-semibold mb-2">Shot {shot.number}</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -119,7 +93,7 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
             <div>
               <p className="text-gray-400">Equipment</p>
               <ul className="list-disc list-inside text-white">
-                {scene.technicalRequirements.equipment.map((item, i) => (
+                {scene.technicalRequirements.equipment.map((item: string, i: number) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
@@ -127,7 +101,7 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
             <div>
               <p className="text-gray-400">VFX</p>
               <ul className="list-disc list-inside text-white">
-                {scene.technicalRequirements.vfx.map((item, i) => (
+                {scene.technicalRequirements.vfx.map((item: string, i: number) => (
                   <li key={i}>{item}</li>
                 ))}
               </ul>
@@ -150,7 +124,7 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
           <div className="mt-2">
             <p className="text-gray-400">Sound Cues</p>
             <ul className="list-disc list-inside text-white">
-              {scene.emotionalContext.soundCues.map((cue, i) => (
+              {scene.emotionalContext.soundCues.map((cue: string, i: number) => (
                 <li key={i}>{cue}</li>
               ))}
             </ul>
@@ -161,31 +135,60 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
   );
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export function Storyboarding() {
+  const navigate = useNavigate();
   const isServerRunning = useServerStatus();
-  const { state, completeStep } = useWorkflow();
+  const { completeStep } = useWorkflow();
+  const { workflow } = useStore();
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load scenes from state if available
-    if (state.scenes) {
-      setScenes(state.scenes);
+    // Load scenes from workflow if available
+    if (workflow.scenes) {
+      setScenes(workflow.scenes);
     }
-  }, [state.scenes]);
+  }, [workflow.scenes]);
 
   const handleProcessStoryboard = async () => {
-    if (!isServerRunning) return;
+    if (!isServerRunning || !workflow.scriptFile) return;
     
     setIsProcessing(true);
+    setError(null);
+
     try {
-      // Process storyboard and prepare for movie editing
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulated processing
+      const response = await fetch(`${API_URL}/api/storyboarding/process-script`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          script: workflow.scriptFile.content,
+          scriptId: workflow.scriptFile.fileName,
+          userId: workflow.scriptFile.fileName.split('/')[0]
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process script');
+      }
+
+      const data = await response.json();
+      
+      // Update scenes in store and local state
+      setScenes(data.scenes);
+      useStore.getState().setScenes(data.scenes);
+
+      // Complete the storyboard step
       completeStep('scene');
-      navigate('/movie');
     } catch (error) {
       console.error('Error processing storyboard:', error);
+      setError(error instanceof Error ? error.message : 'Failed to process storyboard');
     } finally {
       setIsProcessing(false);
     }
@@ -197,6 +200,13 @@ export function Storyboarding() {
         <h1 className="text-4xl font-bold text-[#FFA500]">Storyboarding</h1>
         <p className="text-lg text-gray-300 mt-2">Review and process your scene breakdowns.</p>
       </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-md text-red-500 flex items-center">
+          <AlertCircle className="w-5 h-5 mr-2" />
+          {error}
+        </div>
+      )}
 
       {!isServerRunning && (
         <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500 rounded-md text-yellow-500 flex items-center">
@@ -231,7 +241,7 @@ export function Storyboarding() {
           size="lg"
           className="bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleProcessStoryboard}
-          disabled={isProcessing || scenes.length === 0 || !isServerRunning}
+          disabled={isProcessing || !workflow.scriptFile || !isServerRunning}
         >
           {isProcessing ? (
             <>

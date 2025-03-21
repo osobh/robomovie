@@ -15,17 +15,35 @@ interface MovieSettings {
   mode: string;
 }
 
-interface Scene {
+export interface Scene {
+  title: string;
   sceneNumber: number;
-  sceneHeading: string;
+  location: string;
+  timeOfDay: string;
   characters: string[];
-  summary: string;
-  plotPoints: string[];
-  setting: string;
-  mood: string;
-  visualElements: string[];
-  dialogueHighlights: string[];
-  potentialIssues: string[];
+  description: string;
+  shots: {
+    number: number;
+    angle: string;
+    movement: string;
+    composition: string;
+    action: string;
+    effects: string;
+    lighting: string;
+  }[];
+  technicalRequirements: {
+    equipment: string[];
+    vfx: string[];
+    practicalEffects: string[];
+    props: string[];
+    safety: string[];
+  };
+  emotionalContext: {
+    characterEmotions: Record<string, string>;
+    mood: string;
+    colorPalette: string[];
+    soundCues: string[];
+  };
 }
 
 interface ScriptFile {

@@ -1,44 +1,51 @@
 import { Router } from 'express';
 import { openai } from '../services/openai.js';
-import { supabase } from '../services/supabase.js';
-import { v4 as uuidv4 } from 'uuid';
+import { saveStoryboard } from '../services/storage.js';
 
 const router = Router();
 
-const STORYBOARD_PROMPT = `As a professional storyboard artist and script supervisor, analyze this script and create a detailed shot-by-shot breakdown. For each scene, provide:
+const STORYBOARD_PROMPT = `As a professional storyboard artist and script supervisor, analyze this script and create a detailed shot-by-shot breakdown. Return a JSON object with a "scenes" array, where each scene has the following structure:
 
-1. Scene Overview:
-   - Scene number and title
-   - Location description
-   - Time of day
-   - Key characters present
-   - Emotional tone/atmosphere
+{
+  "scenes": [
+    {
+      "title": "string",
+      "sceneNumber": number,
+      "location": "string",
+      "timeOfDay": "string",
+      "characters": ["string"],
+      "description": "string",
+      "shots": [
+        {
+          "number": number,
+          "angle": "string",
+          "movement": "string",
+          "composition": "string",
+          "action": "string",
+          "effects": "string",
+          "lighting": "string"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": ["string"],
+        "vfx": ["string"],
+        "practicalEffects": ["string"],
+        "props": ["string"],
+        "safety": ["string"]
+      },
+      "emotionalContext": {
+        "characterEmotions": { "characterName": "emotionDescription" },
+        "mood": "string",
+        "colorPalette": ["string"],
+        "soundCues": ["string"]
+      }
+    }
+  ]
+}
 
-2. Shot List:
-   - Shot number
-   - Camera angle (e.g., wide, medium, close-up)
-   - Camera movement (if any)
-   - Shot composition
-   - Key action/dialogue
-   - Visual effects requirements
-   - Lighting notes
+Analyze the script and break it down into scenes, providing detailed information for each field. Be creative but precise in your descriptions.`;
 
-3. Technical Requirements:
-   - Special equipment needed
-   - VFX notes
-   - Practical effects
-   - Key props or set pieces
-   - Safety considerations
-
-4. Emotional Context:
-   - Character emotional states
-   - Scene mood
-   - Color palette suggestions
-   - Musical/sound cues
-
-Format the response as a structured JSON object that can be easily parsed and stored.`;
-
-router.post('/process-script', async (req, res) => {
+router.post('/storyboarding/process-script', async (req, res) => {
   try {
     const { script, scriptId, userId } = req.body;
     
@@ -46,67 +53,38 @@ router.post('/process-script', async (req, res) => {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
-    // Generate a unique folder ID for this storyboard
-    const folderId = uuidv4();
-    
     // Process the script with OpenAI
+    console.log('Processing script with OpenAI...');
     const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         { 
           role: 'system', 
-          content: STORYBOARD_PROMPT 
+          content: STORYBOARD_PROMPT + '\n\nIMPORTANT: Your response must be a valid JSON object. Do not include any text outside of the JSON structure.' 
         },
         { 
           role: 'user', 
           content: script 
         }
       ],
-      response_format: { type: "json_object" }
+      temperature: 0.7
     });
 
-    const storyboardData = JSON.parse(completion.choices[0].message.content);
-
-    // Save storyboard data to Supabase Storage
-    const { error: storageError } = await supabase.storage
-      .from('storyboards')
-      .upload(
-        `${userId}/${folderId}/storyboard.json`,
-        JSON.stringify(storyboardData, null, 2),
-        {
-          contentType: 'application/json',
-          cacheControl: '3600'
-        }
-      );
-
-    if (storageError) {
-      throw storageError;
+    let storyboardData;
+    try {
+      storyboardData = JSON.parse(completion.choices[0].message.content);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      throw new Error('Failed to parse storyboard data');
     }
 
-    // Save reference in the database
-    const { error: dbError } = await supabase
-      .from('scenes')
-      .insert(storyboardData.scenes.map(scene => ({
-        script_id: scriptId,
-        name: scene.title,
-        scene_number: scene.sceneNumber,
-        location: scene.location,
-        time_of_day: scene.timeOfDay,
-        characters: scene.characters,
-        description: scene.description,
-        frame_count: scene.shots.length,
-        tone: scene.emotionalContext.mood,
-        technical_notes: JSON.stringify(scene.technicalRequirements),
-        storyboard_folder_id: folderId
-      })));
-
-    if (dbError) {
-      throw dbError;
-    }
+    // Save storyboard data locally
+    console.log('Saving storyboard data...');
+    const result = await saveStoryboard(userId, scriptId, storyboardData);
 
     res.json({
       message: 'Storyboard generated successfully',
-      folderId,
+      filePath: result.filePath,
       scenes: storyboardData.scenes
     });
   } catch (error) {

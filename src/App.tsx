@@ -5,7 +5,7 @@ import { WorkflowProvider } from '@/lib/workflow';
 import { Home } from '@/pages/home';
 import { Dashboard } from '@/pages/dashboard';
 import { Settings } from '@/pages/settings';
-import { ScriptProcessing } from '@/pages/script-processing';
+import { GenerateScript } from '@/pages/generate-script';
 import { Storyboarding } from '@/pages/storyboarding';
 import { MovieEditing } from '@/pages/movie-editing';
 import { AudioIntegration } from '@/pages/audio-integration';
@@ -39,7 +39,7 @@ function App() {
                 path="/script"
                 element={
                   <ProtectedRoute>
-                    <ScriptProcessing />
+                    <GenerateScript />
                   </ProtectedRoute>
                 }
               />
