@@ -1,0 +1,230 @@
+{
+  "scenes": [
+    {
+      "title": "The Backrooms",
+      "sceneNumber": 1,
+      "location": "Mall - Backrooms",
+      "timeOfDay": "Night",
+      "characters": [
+        "Aiden",
+        "Creature"
+      ],
+      "description": "Aiden explores the backrooms of a mall and encounters a grotesque creature.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Low-angle",
+          "movement": "Pan",
+          "composition": "Close-up",
+          "action": "Aiden enters with a flashlight. He finds a mall map.",
+          "effects": "Sound effect of dripping water, Flashlight beam",
+          "lighting": "Low"
+        },
+        {
+          "number": 2,
+          "angle": "Over-the-shoulder",
+          "movement": "Steady",
+          "composition": "Medium",
+          "action": "Aiden encounters and fights the creature.",
+          "effects": "Creature's growl, Quick fight sequence, Aiden's injury",
+          "lighting": "Flashlight"
+        },
+        {
+          "number": 3,
+          "angle": "Close-up",
+          "movement": "Steady",
+          "composition": "Extreme close-up",
+          "action": "Aiden examines his pendant after the fight.",
+          "effects": "Close-up of pendant's inscription",
+          "lighting": "Flashlight"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Flashlight",
+          "Camera",
+          "Sound equipment"
+        ],
+        "vfx": [
+          "Creature effects"
+        ],
+        "practicalEffects": [
+          "Fight choreography",
+          "Creature make-up"
+        ],
+        "props": [
+          "Mall map",
+          "Pendant",
+          "Furniture"
+        ],
+        "safety": [
+          "Fight safety precautions"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Aiden": "Alert, determined, fearless"
+        },
+        "mood": "Tense, eerie",
+        "colorPalette": [
+          "Black",
+          "Gray"
+        ],
+        "soundCues": [
+          "Dripping water",
+          "Creature's growl",
+          "Fight sounds"
+        ]
+      },
+      "script": "INT. THE BACKROOMS - MALL - NIGHT\n\nDRIP... DRIP... DRIP... The abyssal darkness is punctuated by the plaintive sound of dripping water. Suddenly, the beam of a flashlight cuts through the gloom. Enter AIDEN (45), grizzled and stern, a survivalist wearing military-grade gear.\n\nAiden's flashlight sweeps the room, revealing old mannequins and boxes of forgotten merchandise. As he carefully navigates the scattered furniture, he pauses to examine an old MALL MAP. It's faded and torn, but clear enough to show the intricate network of backrooms and service corridors.\n\nAIDEN\n(To himself)\nNow that's a helpful relic.\n\nSuddenly, a low GROWL echoes through the narrow passage. Aiden turns sharply, his flashlight revealing a grotesque creature, half-man, half-beast, feeding on scraps of clothing.\n\nA swift fistfight ensues. Aiden manages to impale the creature with a rusty pipe jutting from a wall. The creature recoils and runs into the darkness. Slightly wounded and adrenaline pumping, Aiden examines a worn pendant around his neck. It's inscribed: \"For true hearts, the way is never lost.\"\n\nA distant THUD followed by a mechanical SCREECH spur him forward. He descends down a set of steps to a lower floor."
+    },
+    {
+      "title": "The Sub-Basement",
+      "sceneNumber": 2,
+      "location": "Mall - Sub-Basement",
+      "timeOfDay": "Night",
+      "characters": [
+        "Aiden",
+        "Alpha Beast"
+      ],
+      "description": "Aiden navigates the sub-basement, discovers the Sphere of Solace and fights the Alpha Beast.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Tracking",
+          "movement": "Pan",
+          "composition": "Wide",
+          "action": "Aiden explores the sub-basement with his flashlight.",
+          "effects": "Flashlight beam, Sound of machinery",
+          "lighting": "Low"
+        },
+        {
+          "number": 2,
+          "angle": "High-angle",
+          "movement": "Steady",
+          "composition": "Medium",
+          "action": "Aiden discovers the Sphere of Solace on a shelf.",
+          "effects": "Glow from the Sphere, Aiden's reaction",
+          "lighting": "Low, Sphere glow"
+        },
+        {
+          "number": 3,
+          "angle": "Low-angle",
+          "movement": "Track",
+          "composition": "Wide",
+          "action": "Aiden fights Alpha Beast and retrieves the Sphere.",
+          "effects": "Alpha Beast's roar, Fight sequence, Light from Sphere",
+          "lighting": "Sudden bright, Sphere glow"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Flashlight",
+          "Camera",
+          "Sound equipment"
+        ],
+        "vfx": [
+          "Alpha Beast effects",
+          "Sphere glow",
+          "Portal"
+        ],
+        "practicalEffects": [
+          "Fight choreography",
+          "Alpha Beast make-up"
+        ],
+        "props": [
+          "Sphere of Solace",
+          "Machinery"
+        ],
+        "safety": [
+          "Fight safety precautions",
+          "Stunt coordination"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Aiden": "Surprised, determined, triumphant"
+        },
+        "mood": "Intense, suspenseful",
+        "colorPalette": [
+          "Black",
+          "Gray",
+          "Bright white from Sphere"
+        ],
+        "soundCues": [
+          "Machinery noise",
+          "Alpha Beast's roar",
+          "Fight sounds"
+        ]
+      },
+      "script": "INT. SUB-BASEMENT - MALL - NIGHT\n\nThe sub-basement is a sprawl of machinery and old infrastructure. Aiden uses his flashlight to find his way through the labyrinth. Suddenly, he stumbles upon a cavernous room lined with what appears to be ancient, untouched store shelves. \n\nHis eyes widen at the sight. A gleaming, obviously treasured artifact, THE SPHERE OF SOLACE, sits atop the highest shelf, releasing a fluorescent glow that illuminates the room.\n\nSuddenly, the entire mall LIGHTS UP as ancient generators kick into life. Around Aiden, the half-beast creatures recoil and retreat from the sudden light. Aiden takes advantage of the chaos and sprints towards the artifact. \n\nA SCREAM echoes around the mall as the ALPHA BEAST, colossal and terrifying, blocks his way. Aiden stumbles backwards in shock, tripping over a coil of wires on the floor.\n\nAiden pulls himself to his feet and faces the Alpha Beast as it snarls ferociously. He takes a step forward, then another, and another, charging the beast. It lunges, but Aiden swiftly sidesteps, forcing it to crash into a row of shelves. \n\nSeizing his chance, Aiden sprints desperately towards the artifact. He reaches up, clutching the Sphere of Solace triumphantly just as Alpha Beast recovers, charging towards him.\n\nAiden twists the Sphere, and it unveils a blinding, radiant light, causing the Alpha Beast and its minions to snarl and retreat. A bright portal appears, and Aiden jumps through it just as the mall plunges back into darkness."
+    },
+    {
+      "title": "Aiden's Safehouse",
+      "sceneNumber": 3,
+      "location": "Aiden's Safehouse",
+      "timeOfDay": "Night",
+      "characters": [
+        "Aiden"
+      ],
+      "description": "Aiden returns to his safehouse and rests, looking at the retrieved Sphere.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Medium",
+          "movement": "Steady",
+          "composition": "Full",
+          "action": "Aiden enters the safehouse and places the Sphere on a table.",
+          "effects": "Light from Sphere, Aiden's exhaustion",
+          "lighting": "Dim"
+        },
+        {
+          "number": 2,
+          "angle": "Close-up",
+          "movement": "Steady",
+          "composition": "Close-up",
+          "action": "Aiden slumps on a chair and looks at the Sphere.",
+          "effects": "Aiden's relief, Close-up of Sphere",
+          "lighting": "Dim, Sphere glow"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Lighting"
+        ],
+        "vfx": [
+          "Sphere glow"
+        ],
+        "practicalEffects": [],
+        "props": [
+          "Sphere of Solace",
+          "Chair",
+          "Table"
+        ],
+        "safety": []
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Aiden": "Exhausted, relieved"
+        },
+        "mood": "Quiet, peaceful",
+        "colorPalette": [
+          "Black",
+          "Gray",
+          "White from Sphere"
+        ],
+        "soundCues": [
+          "Soft ambient noise"
+        ]
+      },
+      "script": "INT. AIDEN'S SAFEHOUSE - NIGHT\n\nAiden's wristband blinks with a faint light indicating the success of his endeavor. He places the Sphere down and slumps his weary body onto a chair. He sinks back, relief flooding his features as he looks at the artifact.\n\nFADE OUT:\n\nTO BE CONTINUED...\n\nFADE OUT."
+    }
+  ],
+  "metadata": {
+    "scriptId": "backrooms_1742728174053",
+    "createdAt": "2025-03-23T11:11:45.637Z",
+    "sceneCount": 3,
+    "userId": "d930f876-4646-4f71-b1ba-e24291bb6edd"
+  }
+}

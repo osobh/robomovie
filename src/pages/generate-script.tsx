@@ -62,7 +62,7 @@ export function GenerateScript() {
   const [files, setFiles] = useState<{ id: string; name: string; type: 'script' | 'movie'; createdAt: string; size: string; metadata?: any }[]>([]);
 
   // Get store actions
-  const { workflow, setScenes, setMovieSettings: setStoreMovieSettings } = useStore();
+  const { workflow, setMovieSettings: setStoreMovieSettings } = useStore();
 
   useEffect(() => {
     const fetchFiles = async () => {

@@ -8,8 +8,6 @@ import { Settings } from '@/pages/settings';
 import { GenerateScript } from '@/pages/generate-script';
 import { Storyboarding } from '@/pages/storyboarding';
 import { MovieEditing } from '@/pages/movie-editing';
-import { AudioIntegration } from '@/pages/audio-integration';
-import { MovieAssembly } from '@/pages/movie-assembly';
 import { Theatre } from '@/pages/theatre';
 
 function App() {
@@ -56,22 +54,6 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MovieEditing />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/audio"
-                element={
-                  <ProtectedRoute>
-                    <AudioIntegration />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/assembly"
-                element={
-                  <ProtectedRoute>
-                    <MovieAssembly />
                   </ProtectedRoute>
                 }
               />

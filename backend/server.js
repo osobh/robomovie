@@ -7,7 +7,6 @@ import uploadRoutes from './routes/upload.js';
 import generateScriptRoutes from './routes/generate-script.js';
 import storyboardingRoutes from './routes/storyboarding.js';
 import movieEditingRoutes from './routes/movie-editing.js';
-import audioIntegrationRoutes from './routes/audio-integration.js';
 import theatreRoutes from './routes/theatre.js';
 import dashboardRoutes from './routes/dashboard.js';
 import statsRoutes from './routes/stats.js';
@@ -28,13 +27,12 @@ app.use(express.json());
 app.use('/api', uploadRoutes);
 app.use('/api', generateScriptRoutes);
 app.use('/api', storyboardingRoutes);
-app.use('/api', movieEditingRoutes);
-app.use('/api', audioIntegrationRoutes);
+app.use('/api', movieEditingRoutes); // Now includes audio and assembly functionality
 app.use('/api', theatreRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api', statsRoutes);
 app.use('/api', filesRoutes);
-app.use('/api', scriptsRoutes); // Add scripts routes
+app.use('/api', scriptsRoutes);
 
 // Health check endpoint
 app.use('/api/health', (req, res) => {

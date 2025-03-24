@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '@/lib/store';
-import { Home, FileText, Layers, Film, Music, Clapperboard, Theater as Theatre, LogOut, Code, Settings } from 'lucide-react';
+import { Home, FileText, Layers, Film, Theater as Theatre, LogOut, Code, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useWorkflow } from '@/lib/workflow';
 import { Button } from './ui/button';
@@ -96,21 +96,6 @@ export function Layout({ children }: LayoutProps) {
           active={location.pathname === '/movie'}
         />
         
-        <NavItem
-          to="/audio"
-          icon={<Music className="w-5 h-5" />}
-          label="Audio Integration"
-          disabled={!isStepComplete('movie')}
-          active={location.pathname === '/audio'}
-        />
-
-        <NavItem
-          to="/assembly"
-          icon={<Clapperboard className="w-5 h-5" />}
-          label="Movie Assembly"
-          disabled={!isStepComplete('audio')}
-          active={location.pathname === '/assembly'}
-        />
         
         <NavItem
           to="/theatre"

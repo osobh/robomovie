@@ -179,27 +179,122 @@ export async function listUserScripts(userId) {
   }
 }
 
-// Delete a script and its metadata
 // Save storyboard data
 export async function saveStoryboard(userId, scriptId, storyboardData) {
   try {
+    console.log('Creating storyboard directory for user:', userId);
     const userDir = await ensureUserDirectory(userId, 'storyboards');
-    const fileName = `${scriptId}_storyboard.json`;
-    const filePath = path.join(userDir, fileName);
+    const timestamp = Date.now();
+    
+    // Clean up scriptId by removing .txt extension
+    const cleanScriptId = scriptId.replace('.txt', '');
+    const fileName = `${cleanScriptId}_${timestamp}_storyboard.json`;
+    
+    // Create a directory for this storyboard
+    const storyboardDir = path.join(userDir, cleanScriptId);
+    await fs.mkdir(storyboardDir, { recursive: true });
+    console.log('Created storyboard directory:', storyboardDir);
+    
+    const filePath = path.join(storyboardDir, fileName);
+    console.log('Storyboard file path:', filePath);
+
+    // Add metadata to storyboard data
+    const enrichedData = {
+      ...storyboardData,
+      metadata: {
+        scriptId,
+        createdAt: new Date().toISOString(),
+        sceneCount: storyboardData.scenes?.length || 0,
+        userId
+      }
+    };
+    console.log('Enriched storyboard data:', {
+      scriptId,
+      sceneCount: enrichedData.metadata.sceneCount,
+      createdAt: enrichedData.metadata.createdAt
+    });
 
     // Write storyboard data to file
-    await fs.writeFile(filePath, JSON.stringify(storyboardData, null, 2), 'utf8');
+    console.log('Writing storyboard data to file...');
+    await fs.writeFile(filePath, JSON.stringify(enrichedData, null, 2), 'utf8');
+    console.log('Storyboard data written successfully');
 
-    return {
+    const result = {
       fileName,
-      filePath: path.relative(process.cwd(), filePath)
+      filePath: path.relative(process.cwd(), filePath),
+      metadata: enrichedData.metadata
     };
+    console.log('Returning storyboard save result:', result);
+    return result;
   } catch (error) {
     console.error('Error saving storyboard:', error);
     throw error;
   }
 }
 
+// Read storyboard data
+export async function readStoryboard(userId, scriptDir, fileName) {
+  try {
+    console.log('Reading storyboard:', { userId, scriptDir, fileName });
+    const userDir = await ensureUserDirectory(userId, 'storyboards');
+    const storyboardDir = path.join(userDir, scriptDir);
+    const filePath = path.join(storyboardDir, fileName);
+    console.log('Reading storyboard:', { userDir, scriptDir, fileName, filePath });
+    
+    console.log('Reading storyboard file...');
+    const content = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(content);
+    console.log('Storyboard data parsed successfully:', {
+      hasScenes: !!data.scenes,
+      sceneCount: data.scenes?.length || 0,
+      hasMetadata: !!data.metadata
+    });
+    
+    const result = {
+      content: data,
+      filePath: path.relative(process.cwd(), filePath)
+    };
+    console.log('Returning storyboard read result:', {
+      filePath: result.filePath,
+      hasContent: !!result.content
+    });
+    return result;
+  } catch (error) {
+    console.error('Error reading storyboard:', error);
+    throw error;
+  }
+}
+
+// Delete storyboard
+export async function deleteStoryboard(userId, scriptDir, fileName) {
+  try {
+    console.log('Deleting storyboard:', { userId, scriptDir, fileName });
+    const userDir = await ensureUserDirectory(userId, 'storyboards');
+    const storyboardDir = path.join(userDir, scriptDir);
+    const filePath = path.join(storyboardDir, fileName);
+    console.log('Deleting storyboard:', { userDir, scriptDir, fileName, filePath });
+    
+    console.log('Deleting storyboard file...');
+    await fs.unlink(filePath);
+    
+    // Try to remove the storyboard directory if it's empty
+    try {
+      await fs.rmdir(storyboardDir);
+      console.log('Removed empty storyboard directory:', storyboardDir);
+    } catch (err) {
+      // Directory might not be empty or might not exist, ignore error
+      console.log('Could not remove storyboard directory (might not be empty):', storyboardDir);
+    }
+    
+    console.log('Storyboard file deleted successfully');
+    return true;
+  } catch (error) {
+    console.error('Error deleting storyboard:', error);
+    throw error;
+  }
+}
+
+// Delete script and metadata
 export async function deleteScript(userId, fileName) {
   try {
     const userScriptsDir = await ensureUserDirectory(userId, 'scripts');

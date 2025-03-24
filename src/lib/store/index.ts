@@ -16,12 +16,15 @@ interface MovieSettings {
 }
 
 export interface Scene {
+  id: string; // Required for drag and drop functionality
   title: string;
   sceneNumber: number;
   location: string;
   timeOfDay: string;
   characters: string[];
   description: string;
+  generator?: 'runway' | 'pika'; // For movie editing
+  comments?: string; // For movie editing
   shots: {
     number: number;
     angle: string;
@@ -44,6 +47,7 @@ export interface Scene {
     colorPalette: string[];
     soundCues: string[];
   };
+  script: string;
 }
 
 interface ScriptFile {
@@ -56,7 +60,7 @@ interface WorkflowState {
   script: string | null;
   scriptFile: ScriptFile | null;
   scenes: Scene[] | null;
-  movie: any | null;
+  movie: Scene[] | null;
   audio: any | null;
   completedSteps: string[];
   devMode: boolean;
