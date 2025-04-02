@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
-import { useStore } from '../store';
+import { useEffect } from "react";
+import { useStore } from "../store";
+import { getBackendUrl } from "../utils";
 
 export function useServerStatus() {
   const isServerRunning = useStore((state) => state.server.isRunning);
@@ -8,9 +9,11 @@ export function useServerStatus() {
   useEffect(() => {
     const checkServerStatus = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/health');
+        const baseUrl = getBackendUrl();
+        const response = await fetch(`${baseUrl}/api/health`);
         setServerStatus(response.ok);
       } catch (error) {
+        console.error("Server health check failed:", error);
         setServerStatus(false);
       }
     };
