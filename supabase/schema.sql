@@ -12,6 +12,29 @@
   8. script_files - Script file metadata
 */
 
+-- Create auth schema and base users table (for standalone PostgreSQL)
+CREATE SCHEMA IF NOT EXISTS auth;
+
+CREATE TABLE IF NOT EXISTS auth.users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text UNIQUE NOT NULL,
+  raw_user_meta_data jsonb,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Create authenticated role if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    CREATE ROLE authenticated;
+  END IF;
+END;
+$$;
+
+-- Grant privileges to authenticated role
+GRANT USAGE ON SCHEMA auth TO authenticated;
+GRANT SELECT ON auth.users TO authenticated;
+
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -177,50 +200,51 @@ ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE script_files ENABLE ROW LEVEL SECURITY;
 
--- Create RLS Policies
+-- Create RLS Policies (using current_user as a substitute for auth.uid())
+-- Note: Replace with auth.uid() if using Supabase
 
 -- Users policies
 CREATE POLICY "Users can view own profile" ON users
   FOR SELECT TO authenticated
-  USING (auth.uid() = id);
+  USING (id::text = current_user);
 
 CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE TO authenticated
-  USING (auth.uid() = id);
+  USING (id::text = current_user);
 
 -- Movie Settings policies
 CREATE POLICY "Users can view own movie settings" ON movie_settings
   FOR SELECT TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can create movie settings" ON movie_settings
   FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (user_id::text = current_user);
 
 CREATE POLICY "Users can update own movie settings" ON movie_settings
   FOR UPDATE TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can delete own movie settings" ON movie_settings
   FOR DELETE TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 -- Scripts policies
 CREATE POLICY "Users can view own scripts" ON scripts
   FOR SELECT TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can create scripts" ON scripts
   FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (user_id::text = current_user);
 
 CREATE POLICY "Users can update own scripts" ON scripts
   FOR UPDATE TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can delete own scripts" ON scripts
   FOR DELETE TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 -- Scenes policies
 CREATE POLICY "Users can view scenes of own scripts" ON scenes
@@ -228,7 +252,7 @@ CREATE POLICY "Users can view scenes of own scripts" ON scenes
   USING (EXISTS (
     SELECT 1 FROM scripts
     WHERE scripts.id = scenes.script_id
-    AND scripts.user_id = auth.uid()
+    AND scripts.user_id::text = current_user
   ));
 
 CREATE POLICY "Users can create scenes for own scripts" ON scenes
@@ -236,7 +260,7 @@ CREATE POLICY "Users can create scenes for own scripts" ON scenes
   WITH CHECK (EXISTS (
     SELECT 1 FROM scripts
     WHERE scripts.id = scenes.script_id
-    AND scripts.user_id = auth.uid()
+    AND scripts.user_id::text = current_user
   ));
 
 CREATE POLICY "Users can update scenes of own scripts" ON scenes
@@ -244,65 +268,65 @@ CREATE POLICY "Users can update scenes of own scripts" ON scenes
   USING (EXISTS (
     SELECT 1 FROM scripts
     WHERE scripts.id = scenes.script_id
-    AND scripts.user_id = auth.uid()
+    AND scripts.user_id::text = current_user
   ));
 
 -- Movies policies
 CREATE POLICY "Users can view own movies" ON movies
   FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can create movies" ON movies
   FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (user_id::text = current_user);
 
 CREATE POLICY "Users can update own movies" ON movies
   FOR UPDATE TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 -- Settings policies
 CREATE POLICY "Users can view own settings" ON settings
   FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can manage own settings" ON settings
   FOR ALL TO authenticated
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
+  USING (user_id::text = current_user)
+  WITH CHECK (user_id::text = current_user);
 
 -- Files policies
 CREATE POLICY "Users can view own files" ON files
   FOR SELECT TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can create files" ON files
   FOR INSERT TO authenticated
-  WITH CHECK (user_id = auth.uid());
+  WITH CHECK (user_id::text = current_user);
 
 CREATE POLICY "Users can update own files" ON files
   FOR UPDATE TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can delete own files" ON files
   FOR DELETE TO authenticated
-  USING (user_id = auth.uid());
+  USING (user_id::text = current_user);
 
 -- Script Files policies
 CREATE POLICY "Users can view own script files" ON script_files
   FOR SELECT TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can insert own script files" ON script_files
   FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (user_id::text = current_user);
 
 CREATE POLICY "Users can update own script files" ON script_files
-  FOR UPDATE TO authenticated
-  USING (auth.uid() = user_id);
+  FOR 최대UPDATE TO authenticated
+  USING (user_id::text = current_user);
 
 CREATE POLICY "Users can delete own script files" ON script_files
   FOR DELETE TO authenticated
-  USING (auth.uid() = user_id);
+  USING (user_id::text = current_user);
 
 -- Create updated_at function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -318,8 +342,8 @@ CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.users (id, full_name)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name');
-  RETURN new;
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name');
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

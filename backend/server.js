@@ -1,50 +1,65 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { initializeStorage } from "./services/storage.js";
 
 // Import routes
-import uploadRoutes from './routes/upload.js';
-import generateScriptRoutes from './routes/generate-script.js';
-import storyboardingRoutes from './routes/storyboarding.js';
-import movieEditingRoutes from './routes/movie-editing.js';
-import theatreRoutes from './routes/theatre.js';
-import dashboardRoutes from './routes/dashboard.js';
-import statsRoutes from './routes/stats.js';
-import filesRoutes from './routes/files.js';
-import scriptsRoutes from './routes/scripts.js';
+import uploadRoutes from "./routes/upload.js";
+import generateScriptRoutes from "./routes/generate-script.js";
+import storyboardingRoutes from "./routes/storyboarding.js";
+import movieEditingRoutes from "./routes/movie-editing.js";
+import theatreRoutes from "./routes/theatre.js";
+import dashboardRoutes from "./routes/dashboard.js";
+import statsRoutes from "./routes/stats.js";
+import filesRoutes from "./routes/files.js";
+import scriptsRoutes from "./routes/scripts.js";
 
 // Load environment variables
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: "../.env" });
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Frontend dev server
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // Routes
-app.use('/api', uploadRoutes);
-app.use('/api', generateScriptRoutes);
-app.use('/api', storyboardingRoutes);
-app.use('/api', movieEditingRoutes); // Now includes audio and assembly functionality
-app.use('/api', theatreRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api', statsRoutes);
-app.use('/api', filesRoutes);
-app.use('/api', scriptsRoutes);
+app.use("/api", uploadRoutes);
+app.use("/api", generateScriptRoutes);
+app.use("/api", storyboardingRoutes);
+app.use("/api", movieEditingRoutes); // Now includes audio and assembly functionality
+app.use("/api", theatreRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api", statsRoutes);
+app.use("/api", filesRoutes);
+app.use("/api", scriptsRoutes);
 
 // Health check endpoint
-app.use('/api/health', (req, res) => {
+app.use("/api/health", (req, res) => {
   res.sendStatus(200);
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something broke!' });
+  res.status(500).json({ error: "Something broke!" });
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(port, async () => {
+  try {
+    await initializeStorage();
+    console.log("Storage directories initialized");
+    console.log(`Server running at http://192.168.1.3:${port}`);
+  } catch (error) {
+    console.error("Failed to initialize storage:", error);
+    process.exit(1);
+  }
 });

@@ -1,0 +1,438 @@
+{
+  "scenes": [
+    {
+      "title": "Graveyard Arrival",
+      "sceneNumber": 1,
+      "location": "Abandoned Graveyard",
+      "timeOfDay": "Night",
+      "characters": [
+        "Ellie",
+        "Jake",
+        "Milo"
+      ],
+      "description": "Three kids stumble upon an eerie graveyard at night, discussing the rumored treasure hidden there.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Wide",
+          "movement": "Tracking",
+          "composition": "Characters centered with tombstones and trees in the backdrop",
+          "action": "Characters walk into the graveyard",
+          "effects": "Wind howling, eerie glow from flashlights",
+          "lighting": "Low key, chiaroscuro"
+        },
+        {
+          "number": 2,
+          "angle": "Medium",
+          "movement": "Stationary",
+          "composition": "Milo in focus with map, Ellie and Jake blurred in the background",
+          "action": "Milo confirms the treasure's location",
+          "effects": "Milo's face lit by flashlight",
+          "lighting": "Low key"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Flashlights"
+        ],
+        "vfx": [
+          "Glow effect"
+        ],
+        "practicalEffects": [
+          "Wind machine",
+          "Bush rustling"
+        ],
+        "props": [
+          "Ancient map",
+          "Flashlights"
+        ],
+        "safety": [
+          "Night filming precautions"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ellie": "Apprehensive",
+          "Jake": "Excited",
+          "Milo": "Determined"
+        },
+        "mood": "Tense",
+        "colorPalette": [
+          "Dark blues",
+          "Greys",
+          "Black"
+        ],
+        "soundCues": [
+          "Wind howling",
+          "Leaves rustling"
+        ]
+      },
+      "script": "EXT. ABANDONED GRAVEYARD - NIGHT\nBone-chilling WINDS HOWL across the ancient tombstones, whistling through the BARE BRANCHES of OVERGROWN TREES. Our intrepid TRIO, ELLIE (11), JAKE (10), and MILO (9) stumble into view, lit only by the eerie GLOW of their FLASHLIGHTS. Their faces are a mix of apprehension and excitement.\n\nELLIE\nIt's creepier than in the stories.\n\nJAKE\nMilo, you sure your grandpa’s treasure is here?\n\nMilo nods, clutching an ancient MAP, his eyes a blaze of determination.\n\nMILO\nHe used to be the caretaker. Swore there was a secret treasure hidden here."
+    },
+    {
+      "title": "Grave Hunter Attack",
+      "sceneNumber": 2,
+      "location": "Abandoned Graveyard",
+      "timeOfDay": "Night",
+      "characters": [
+        "Ellie",
+        "Jake",
+        "Milo",
+        "The Reaper",
+        "The Pirate",
+        "The Alien"
+      ],
+      "description": "The kids are surprised by three grave hunters who appear and start a laser tag game, causing the kids to retreat.",
+      "shots": [
+        {
+          "number": 3,
+          "angle": "High",
+          "movement": "Pan",
+          "composition": "Characters surrounded by tombstones",
+          "action": "Kids turn and react to rustling bush",
+          "effects": "Flashlights darting, rabbit appearing",
+          "lighting": "Low key, chiaroscuro"
+        },
+        {
+          "number": 4,
+          "angle": "Low",
+          "movement": "Tracking",
+          "composition": "Sinister figures in foreground, kids in background",
+          "action": "Sinister figures weaving in and out of shadows",
+          "effects": "Red laser beams",
+          "lighting": "Low key, backlit"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Flashlights"
+        ],
+        "vfx": [
+          "Laser beam effect"
+        ],
+        "practicalEffects": [
+          "Bush rustling",
+          "Rabbit prop"
+        ],
+        "props": [
+          "Laser tag guns"
+        ],
+        "safety": [
+          "Night filming precautions",
+          "Laser safety"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ellie": "Fearful",
+          "Jake": "Shocked",
+          "Milo": "Scared",
+          "The Reaper": "Threatening",
+          "The Pirate": "Menacing",
+          "The Alien": "Intimidating"
+        },
+        "mood": "Tense",
+        "colorPalette": [
+          "Dark blues",
+          "Greys",
+          "Red"
+        ],
+        "soundCues": [
+          "Rustling",
+          "Gasping",
+          "Laser sounds"
+        ]
+      },
+      "script": "Suddenly, a loud RUSTLE. They whip around, FLASHLIGHTS darting wildly in the darkness.\n\nANGLE ON: A BUSH, vibrating violently. The kids GASP as a FAT RABBIT springs out, bounding away. They LAUGH it off, hearts hammering.\n\nSuddenly, a RED LASER BEAM cuts through the darkness, grazing Milo's face. Each kid's face turns pallid. Hushed whispers.\n\nJAKE\nOmigosh. Are those…real lasers?\n\nCut to: THREE SINISTER FIGURES weave in and out of the shadows, LASER TAG GUNS in hand – THE GRIM REAPER, a PIRATE, and an ALIEN.\n\nTHE REAPER (O.S)\nTag! You’re dead!\n\nThe kids SCREAM and bolt."
+    },
+    {
+      "title": "Mausoleum Hideout",
+      "sceneNumber": 3,
+      "location": "Abandoned Mausoleum",
+      "timeOfDay": "Night",
+      "characters": [
+        "Ellie",
+        "Jake",
+        "Milo"
+      ],
+      "description": "The kids hide in a mausoleum and discover a secret staircase leading to the hidden treasure.",
+      "shots": [
+        {
+          "number": 5,
+          "angle": "Wide",
+          "movement": "Dolly",
+          "composition": "Mausoleum entrance with kids",
+          "action": "Kids entering the mausoleum and slamming the door",
+          "effects": "None",
+          "lighting": "Low key, chiaroscuro"
+        },
+        {
+          "number": 6,
+          "angle": "Close-up",
+          "movement": "Stationary",
+          "composition": "Pirate skull on the wall",
+          "action": "Ellie points at the pirate skull",
+          "effects": "None",
+          "lighting": "Low key"
+        },
+        {
+          "number": 7,
+          "angle": "Medium",
+          "movement": "Tilt",
+          "composition": "Map on the wall, kids in the background",
+          "action": "Milo places map against the wall, floor shifts",
+          "effects": "Floor shifting, revealing staircase",
+          "lighting": "Low key"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera"
+        ],
+        "vfx": [
+          "Floor shifting effect"
+        ],
+        "practicalEffects": [
+          "Mechanical staircase"
+        ],
+        "props": [
+          "Map",
+          "Pirate skull"
+        ],
+        "safety": [
+          "Moving floor precautions"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ellie": "Curious",
+          "Jake": "Concerned",
+          "Milo": "Excited"
+        },
+        "mood": "Mysterious",
+        "colorPalette": [
+          "Dark blues",
+          "Greys",
+          "Black"
+        ],
+        "soundCues": [
+          "Floor shifting",
+          "Door slamming"
+        ]
+      },
+      "script": "EXT. ABANDONED MAUSOLEUM - NIGHT\n\nThey scramble into a dilapidated MAUSOLEUM, SLAMMING the door shut. Inside, it's dark and eerie.\n\nELLIE\nWho are they?\n\nMILO\nTreasure hunters! Like us!\n\nSuddenly, Ellie spots something on the MAUSOLEUM WALL - a PIRATE SKULL.\n\nELLIE\nThat skull…it's from the map!\n\nMilo places the MAP against the wall. Suddenly, the FLOOR SHIFTS beneath them revealing an UNSEEN STAIRCASE."
+    },
+    {
+      "title": "Grave Hunter's Second Attack",
+      "sceneNumber": 4,
+      "location": "Graveyard and Mausoleum",
+      "timeOfDay": "Night",
+      "characters": [
+        "Ellie",
+        "Jake",
+        "Milo",
+        "The Reaper",
+        "The Pirate",
+        "The Alien"
+      ],
+      "description": "The grave hunters prepare for a second attack while the kids discover the treasure and prepare their defense.",
+      "shots": [
+        {
+          "number": 8,
+          "angle": "Close-up",
+          "movement": "Stationary",
+          "composition": "The Reaper's face",
+          "action": "The Reaper speaks and turns towards the mausoleum",
+          "effects": "None",
+          "lighting": "Low key"
+        },
+        {
+          "number": 9,
+          "angle": "Wide",
+          "movement": "Tracking",
+          "composition": "Secret chamber with treasure pile",
+          "action": "Kids discover treasure and hear muffled voices",
+          "effects": "Treasure gleaming",
+          "lighting": "Low key, chiaroscuro"
+        },
+        {
+          "number": 10,
+          "angle": "Medium",
+          "movement": "Stationary",
+          "composition": "Kids devising strategy",
+          "action": "Ellie finds marbles, Jake finds swords, Milo readies catapult",
+          "effects": "None",
+          "lighting": "Low key"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera"
+        ],
+        "vfx": [
+          "Gleaming treasure"
+        ],
+        "practicalEffects": [
+          "Muffled voices"
+        ],
+        "props": [
+          "Treasure pile",
+          "Marbles",
+          "Fencing swords",
+          "Catapult"
+        ],
+        "safety": [
+          "Handling swords",
+          "Marble slipping hazards"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ellie": "Excited",
+          "Jake": "Determined",
+          "Milo": "Brave",
+          "The Reaper": "Determined",
+          "The Pirate": "Eager",
+          "The Alien": "Ready"
+        },
+        "mood": "Tense",
+        "colorPalette": [
+          "Dark blues",
+          "Greys",
+          "Gold"
+        ],
+        "soundCues": [
+          "Muffled voices",
+          "Whispering"
+        ]
+      },
+      "script": "EXT. GRAVEYARD - NIGHT\n\nTHE GRIM REAPER peers at the MAUSOLEUM.\n\nTHE REAPER\nLet's trap'em!\n\nThey charge the door.\n\nCUT TO:\n\nINT. SECRET CHAMBER - NIGHT\n\nOur trio is peering awestruck at a PILE OF TREASURE. Suddenly, they hear MUFFLED VOICES. The grave hunters are coming.\n\nJAKE\nWe need to defend the treasure!\n\nThey devise a quick STRATEGY. Ellie finds a BAG OF MARBLES, Jake a PAIR OF OLD FENCING SWORDS, while Milo readies his catapult."
+    },
+    {
+      "title": "Chaos and Victory",
+      "sceneNumber": 5,
+      "location": "Mausoleum",
+      "timeOfDay": "Night",
+      "characters": [
+        "Ellie",
+        "Jake",
+        "Milo",
+        "The Reaper",
+        "The Pirate",
+        "The Alien"
+      ],
+      "description": "The kids successfully defend the treasure using their homemade weapons, causing chaos among the grave hunters.",
+      "shots": [
+        {
+          "number": 11,
+          "angle": "Wide",
+          "movement": "Tracking",
+          "composition": "Kids and grave hunters in chaotic slapstick",
+          "action": "Kids defend the treasure, grave hunters stumble and retreat",
+          "effects": "Chaos, marbles scattering, rake flipping",
+          "lighting": "Low key, chiaroscuro"
+        },
+        {
+          "number": 12,
+          "angle": "Medium",
+          "movement": "Stationary",
+          "composition": "Kids cheering and laughing",
+          "action": "Kids cheer and laugh after grave hunters retreat",
+          "effects": "None",
+          "lighting": "Low key"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera"
+        ],
+        "vfx": [
+          "None"
+        ],
+        "practicalEffects": [
+          "Rake flipping"
+        ],
+        "props": [
+          "Marbles",
+          "Fencing swords",
+          "Catapult",
+          "Rake"
+        ],
+        "safety": [
+          "Slapstick stunts",
+          "Handling swords",
+          "Marble slipping hazards"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ellie": "Triumphant",
+          "Jake": "Jubilant",
+          "Milo": "Victorious",
+          "The Reaper": "Frustrated",
+          "The Pirate": "Humiliated",
+          "The Alien": "Defeated"
+        },
+        "mood": "Joyful",
+        "colorPalette": [
+          "Dark blues",
+          "Greys",
+          "Gold"
+        ],
+        "soundCues": [
+          "Laughter",
+          "Cheering",
+          "Chaos"
+        ]
+      },
+      "script": "EXT. MAUSOLEUM - NIGHT\n\nAs the grave hunters attack, it’s a CHAOTIC SLAPSTICK. The Reaper trips and crashes into the Pirate due to the marbles. The Alien, fencing with Jake, stumbles onto a rake flipping him into a grave. Milo bombards them with pebbles causing them to retreat.\n\nOnce the coast is clear, the children LAUGH and CHEER. The treasure is theirs!"
+    },
+    {
+      "title": "Next Episode Teaser",
+      "sceneNumber": 6,
+      "location": "None",
+      "timeOfDay": "None",
+      "characters": [],
+      "description": "A text on screen teases the next episode as the wind howls and the scene cuts to black.",
+      "shots": [
+        {
+          "number": 13,
+          "angle": "None",
+          "movement": "None",
+          "composition": "Text on black screen",
+          "action": "Text fades in and out",
+          "effects": "Fade in and out",
+          "lighting": "None"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [],
+        "vfx": [
+          "Text fade in and out"
+        ],
+        "practicalEffects": [],
+        "props": [],
+        "safety": []
+      },
+      "emotionalContext": {
+        "characterEmotions": {},
+        "mood": "Anticipation",
+        "colorPalette": [
+          "Black"
+        ],
+        "soundCues": [
+          "Wind howling"
+        ]
+      },
+      "script": "FADE IN:\n\nTEXT ON SCREEN\n\n\"Next episode: 'Rascals – A Haunted Haul'.\"\n\nThe WIND HOWLS again, the graveyard timer echoes and we...\n\nCUT TO BLACK.\n\nTHE END"
+    }
+  ],
+  "metadata": {
+    "scriptId": "rascals_1742837452247",
+    "createdAt": "2025-03-26T19:06:36.413Z",
+    "sceneCount": 6,
+    "userId": "d930f876-4646-4f71-b1ba-e24291bb6edd"
+  }
+}

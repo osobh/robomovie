@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { FileText, Film, Music, Clock, AlertCircle } from 'lucide-react';
+import { FileText, Film, Layout, Clock, AlertCircle } from 'lucide-react';
 import { useServerStatus } from '@/lib/hooks/use-server-status';
 import { useAuth } from '@/lib/auth';
+import { UploadCard } from '@/components/upload-card';
+import { GenerateScriptCard } from '@/components/generate-script-card';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 interface Stats {
   totalScripts: number;
   completedMovies: number;
-  audioMinutes: number;
+  storyboardCount: number;
   processingTime: number;
 }
 
@@ -41,35 +43,36 @@ export function Dashboard() {
   const [stats, setStats] = useState<Stats>({
     totalScripts: 0,
     completedMovies: 0,
-    audioMinutes: 0,
+    storyboardCount: 0,
     processingTime: 0
   });
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!isServerRunning || !user) return;
+  const fetchDashboardData = async () => {
+    if (!isServerRunning || !user) return;
 
-      try {
-        // Get user stats from API
-        const statsResponse = await fetch(`${API_URL}/api/user-stats/${user.id}`);
-        if (!statsResponse.ok) {
-          throw new Error('Failed to fetch user stats');
-        }
-        const userStats = await statsResponse.json();
-
-        setStats(prev => ({
-          ...prev,
-          totalScripts: userStats.scriptCount || 0,
-          completedMovies: userStats.movieCount || 0
-        }));
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data');
+    try {
+      // Get user stats from API
+      const statsResponse = await fetch(`${API_URL}/api/user-stats/${user.id}`);
+      if (!statsResponse.ok) {
+        throw new Error('Failed to fetch user stats');
       }
-    };
+      const userStats = await statsResponse.json();
 
+      setStats(prev => ({
+        ...prev,
+        totalScripts: userStats.scriptCount || 0,
+        completedMovies: userStats.movieCount || 0,
+        storyboardCount: userStats.storyboardCount || 0
+      }));
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Failed to load dashboard data');
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
   }, [isServerRunning, user]);
 
@@ -110,9 +113,9 @@ export function Dashboard() {
           color="border-[#FFA500]"
         />
         <StatCard
-          icon={Music}
-          label="Audio Minutes"
-          value={`${stats.audioMinutes} min`}
+          icon={Layout}
+          label="Total Storyboards"
+          value={stats.storyboardCount}
           color="border-purple-500"
         />
         <StatCard
@@ -126,6 +129,17 @@ export function Dashboard() {
       <div className="bg-[#1A1A1A] rounded-lg p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Activity Timeline</h2>
         <p className="text-gray-400">No recent activity</p>
+      </div>
+
+      {/* Script Management Cards */}
+      <div className="space-y-6">
+        <UploadCard 
+          onUploadComplete={(files) => {
+            console.log('Files uploaded successfully:', files);
+            fetchDashboardData();
+          }}
+        />
+        <GenerateScriptCard />
       </div>
     </div>
   );

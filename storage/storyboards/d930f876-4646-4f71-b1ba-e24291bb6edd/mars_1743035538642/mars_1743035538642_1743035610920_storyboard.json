@@ -1,0 +1,179 @@
+{
+  "scenes": [
+    {
+      "title": "Opening: The Cosmic Awakening",
+      "sceneNumber": 1,
+      "location": "Deep Space",
+      "timeOfDay": "Night",
+      "characters": [],
+      "description": "Stars shimmer against the void. A colossal spacecraft, “The Primordial,” drifts silently, its hull adorned with ancient reptilian motifs. Inside, the silhouettes of dinosaurs move purposefully.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Long shot",
+          "movement": "Pan",
+          "composition": "The vast expanse of space with stars and the spacecraft",
+          "action": "The spacecraft is drifting",
+          "effects": "Starlight shimmering, silhouette of dinosaurs moving",
+          "lighting": "Low-key, with highlights on the spacecraft"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Dolly"
+        ],
+        "vfx": [
+          "Space backdrop",
+          "Starlight shimmering",
+          "Dinosaur silhouettes"
+        ],
+        "practicalEffects": [
+          "Model spaceship"
+        ],
+        "props": [
+          "Spaceship"
+        ],
+        "safety": [
+          "Ensure secure setup of dolly and camera"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {},
+        "mood": "Mysterious, awe-inspiring",
+        "colorPalette": [
+          "Deep blues",
+          "Black",
+          "White"
+        ],
+        "soundCues": [
+          "Ethereal music",
+          "Narrator voice-over"
+        ]
+      },
+      "script": "Stars shimmer against the void. A colossal spacecraft, “The Primordial,” drifts silently, its hull adorned with ancient reptilian motifs. Inside, the silhouettes of dinosaurs move purposefully."
+    },
+    {
+      "title": "The Council of Titans",
+      "sceneNumber": 2,
+      "location": "The Primordial – Command Deck",
+      "timeOfDay": "N/A",
+      "characters": [
+        "Tyrannox",
+        "Triceratopsia",
+        "Velociraptorix"
+      ],
+      "description": "A vast, futuristic control room with holographic maps of the solar system. Dinosaur leaders in spacesuits gather around a circular table.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Wide shot",
+          "movement": "Static",
+          "composition": "The control room, holographic maps, dinosaur leaders around the table",
+          "action": "The dinosaurs are talking",
+          "effects": "Holographic maps flickering",
+          "lighting": "High-key, with highlights on the dinosaurs and holographic maps"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Microphone"
+        ],
+        "vfx": [
+          "Holographic maps"
+        ],
+        "practicalEffects": [
+          "Spacesuits",
+          "Futuristic control room"
+        ],
+        "props": [
+          "Circular table",
+          "Spacesuits"
+        ],
+        "safety": [
+          "Ensure secure setup of camera"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Tyrannox": "Determined",
+          "Triceratopsia": "Wise",
+          "Velociraptorix": "Cunning"
+        },
+        "mood": "Serious, strategic",
+        "colorPalette": [
+          "Greys",
+          "Blue",
+          "Green"
+        ],
+        "soundCues": [
+          "Futuristic ambient sounds"
+        ]
+      },
+      "script": "Our course is set. Mars calls to us—not as a barren rock, but as a realm ripe for rebirth under our rule..."
+    },
+    {
+      "title": "Mission Briefing",
+      "sceneNumber": 3,
+      "location": "Strategy Chamber – The Primordial",
+      "timeOfDay": "N/A",
+      "characters": [
+        "Commander Stegos",
+        "Tyrannox"
+      ],
+      "description": "Holograms project detailed images of Mars’ surface—vast canyons, ancient riverbeds, and potential energy sources.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Mid shot",
+          "movement": "Pan",
+          "composition": "The chamber, holograms, dinosaurs",
+          "action": "Commander Stegos is briefing, others are listening",
+          "effects": "Holographic images of Mars",
+          "lighting": "High-key, with highlights on the holograms and dinosaurs"
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Microphone"
+        ],
+        "vfx": [
+          "Holographic images"
+        ],
+        "practicalEffects": [
+          "Futuristic chamber"
+        ],
+        "props": [
+          "Hologram projector"
+        ],
+        "safety": [
+          "Ensure secure setup of camera"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Commander Stegos": "Focused",
+          "Tyrannox": "Determined"
+        },
+        "mood": "Concentrated, anticipative",
+        "colorPalette": [
+          "Greys",
+          "Blue",
+          "Red"
+        ],
+        "soundCues": [
+          "Futuristic ambient sounds"
+        ]
+      },
+      "script": "Our objective is clear: secure a foothold on Mars, harness its resources, and build a new dominion..."
+    }
+  ],
+  "metadata": {
+    "scriptId": "mars_1743035538642",
+    "createdAt": "2025-03-27T00:33:30.920Z",
+    "sceneCount": 3,
+    "userId": "d930f876-4646-4f71-b1ba-e24291bb6edd"
+  }
+}

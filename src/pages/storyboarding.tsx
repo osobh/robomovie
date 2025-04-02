@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Play, Image as ImageIcon, AlertCircle, Loader2, FileText, Trash2, Check, ArrowRight } from 'lucide-react';
+import { Play, Image as ImageIcon, AlertCircle, Loader2, FileText, Trash2, Check, ArrowRight, Film } from 'lucide-react';
 import { useServerStatus } from '@/lib/hooks/use-server-status';
 import { useWorkflow } from '@/lib/workflow';
 import { useStore } from '@/lib/store';
@@ -18,21 +18,13 @@ import type { Scene } from '@/lib/store';
 
 interface SceneModalProps {
   scene: Scene;
-  onClose: () => void;
 }
 
-function SceneModal({ scene, onClose }: SceneModalProps) {
+function SceneModal({ scene }: SceneModalProps) {
   return (
     <DialogContent className="bg-[#1A1A1A] text-white max-w-4xl max-h-[80vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Scene {scene.sceneNumber}: {scene.title}</DialogTitle>
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-white"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ✕
-        </button>
       </DialogHeader>
       
       <div className="space-y-6 mt-4">
@@ -145,6 +137,20 @@ function SceneModal({ scene, onClose }: SceneModalProps) {
             <pre className="text-white whitespace-pre-wrap font-mono text-sm">{scene.script}</pre>
           </div>
         </div>
+
+        <div>
+          <h3 className="text-lg font-semibold text-[#FFA500] mb-2">Create Movie Scene</h3>
+          <div className="bg-[#2A2A2A] p-4 rounded-lg">
+            <p className="text-gray-300 mb-4">Transform this scene into a movie scene with visual effects, audio, and more.</p>
+            <Button 
+              className="w-full bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 text-white"
+              onClick={() => {}}
+            >
+              <Film className="w-5 h-5 mr-2" />
+              Create Movie Scene
+            </Button>
+          </div>
+        </div>
       </div>
     </DialogContent>
   );
@@ -158,7 +164,6 @@ export function Storyboarding() {
   const { completeStep } = useWorkflow();
   const { workflow } = useStore();
   const { user } = useAuth();
-  const isStepComplete = useStore((state) => state.isStepComplete);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -194,7 +199,18 @@ export function Storyboarding() {
         console.log('Received files:', data);
         
         // Filter storyboard files
-        const storyboards = data.filter((file: any) => file.type === 'storyboard');
+        interface FileData {
+          id: string;
+          name: string;
+          type: string;
+          createdAt: string;
+          size: number;
+          metadata?: {
+            sceneCount: number;
+          };
+        }
+        
+        const storyboards = data.filter((file: FileData) => file.type === 'storyboard');
         console.log('Filtered storyboard files:', storyboards);
         setSavedStoryboards(storyboards);
       } catch (err) {
@@ -478,7 +494,7 @@ export function Storyboarding() {
       {/* Scene Details Modal */}
       {selectedScene && (
         <Dialog open={true} onOpenChange={() => setSelectedScene(null)}>
-          <SceneModal scene={selectedScene} onClose={() => setSelectedScene(null)} />
+          <SceneModal scene={selectedScene} />
         </Dialog>
       )}
     </div>

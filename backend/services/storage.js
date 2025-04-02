@@ -28,7 +28,7 @@ export async function initializeStorage() {
 }
 
 // Create user directory if it doesn't exist
-async function ensureUserDirectory(userId, type = 'scripts') {
+export async function ensureUserDirectory(userId, type = 'scripts') {
   let baseDir;
   switch (type) {
     case 'scripts':

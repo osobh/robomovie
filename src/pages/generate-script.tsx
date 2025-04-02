@@ -59,7 +59,21 @@ export function GenerateScript() {
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [files, setFiles] = useState<{ id: string; name: string; type: 'script' | 'movie'; createdAt: string; size: string; metadata?: any }[]>([]);
+
+  interface FileMetadata extends MovieSettings {
+    createdAt?: string;
+  }
+
+  interface FileData {
+    id: string;
+    name: string;
+    type: 'script' | 'movie';
+    createdAt: string;
+    size: string | number;
+    metadata?: FileMetadata;
+  }
+
+  const [files, setFiles] = useState<FileData[]>([]);
 
   // Get store actions
   const { workflow, setMovieSettings: setStoreMovieSettings } = useStore();
@@ -69,19 +83,19 @@ export function GenerateScript() {
       if (!isServerRunning || !user) return;
 
       try {
-        const filesResponse = await fetch(`${API_URL}/api/user-files/${user.id}`);
+        const filesResponse = await fetch(`${API_URL}/api/user-files/${user.id}?type=script`);
         if (!filesResponse.ok) {
           throw new Error('Failed to fetch user files');
         }
         const recentFiles = await filesResponse.json();
 
         // Transform files data
-        const formattedFiles = recentFiles.map((file: any) => ({
+        const formattedFiles = recentFiles.map((file: FileData) => ({
           id: file.id,
           name: file.name,
           type: file.type as 'script' | 'movie',
           createdAt: file.createdAt,
-          size: formatFileSize(file.size),
+          size: formatFileSize(typeof file.size === 'string' ? parseInt(file.size) : file.size),
           metadata: file.metadata
         }));
 
@@ -199,7 +213,8 @@ export function GenerateScript() {
       }
 
       let generatedScript = '';
-      while (true) {
+      let isComplete = false;
+      while (!isComplete) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -215,7 +230,10 @@ export function GenerateScript() {
               const parsed = JSON.parse(data);
               
               if (parsed.content !== undefined) {
-                if (parsed.done) break;
+                if (parsed.done) {
+                  isComplete = true;
+                  break;
+                }
                 if (parsed.content) {
                   generatedScript += parsed.content;
                   setScript(generatedScript); // Update textarea in real-time
@@ -277,7 +295,7 @@ export function GenerateScript() {
     }
   };
 
-  const handleLoadScript = async (file: { id: string; name: string; metadata?: any }) => {
+  const handleLoadScript = async (file: FileData) => {
     try {
       const response = await fetch(`${API_URL}/api/scripts/script-content/${user?.id}/${file.id}`);
       if (!response.ok) throw new Error('Failed to fetch script');
@@ -290,14 +308,14 @@ export function GenerateScript() {
         content: data.content
       });
 
-      // Update both local state and store with metadata if available
-      const newSettings = file.metadata || {
-        title: data.title || '',
-        genre: data.genre || '',
-        number_of_scenes: data.number_of_scenes || 0,
-        length_minutes: data.length_minutes || 5,
-        topic: '',
-        mode: 'managed'
+      // Create movie settings from metadata or data
+      const newSettings: MovieSettings = {
+        title: file.metadata?.title || data.title || '',
+        genre: file.metadata?.genre || data.genre || '',
+        number_of_scenes: file.metadata?.number_of_scenes || data.number_of_scenes || 0,
+        length_minutes: file.metadata?.length_minutes || data.length_minutes || 5,
+        topic: file.metadata?.topic || '',
+        mode: file.metadata?.mode || 'managed'
       };
       setMovieSettings(newSettings);
       setStoreMovieSettings(newSettings);

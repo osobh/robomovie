@@ -33,114 +33,108 @@ async function getFileStats(filePath) {
 router.get('/user-files/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const { type } = req.query;
+
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const scriptsDir = path.join(STORAGE_BASE, 'scripts', userId);
-    const screenplaysDir = path.join(STORAGE_BASE, 'screenplays', userId);
-    const storyboardsDir = path.join(STORAGE_BASE, 'storyboards', userId);
     const files = [];
 
-    // Get scripts
-    try {
-      const scriptFiles = await fs.readdir(scriptsDir);
-      for (const fileName of scriptFiles) {
-        const filePath = path.join(scriptsDir, fileName);
-        const stats = await getFileStats(filePath);
-        files.push({
-          id: fileName,
-          name: fileName.split('_')[0], // Get original title
-          type: 'script',
-          createdAt: stats.createdAt,
-          size: stats.size
-        });
-      }
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.error('Error reading scripts directory:', error);
-      }
-    }
-
-    // Get screenplays
-    try {
-      const screenplayFiles = await fs.readdir(screenplaysDir);
-      for (const fileName of screenplayFiles) {
-        const filePath = path.join(screenplaysDir, fileName);
-        const stats = await getFileStats(filePath);
-        files.push({
-          id: fileName,
-          name: fileName.split('_')[0], // Get original title
-          type: 'movie',
-          createdAt: stats.createdAt,
-          size: stats.size
-        });
-      }
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.error('Error reading screenplays directory:', error);
-      }
-    }
-
-    // Get storyboards (recursively)
-    try {
-      async function getStoryboards(dir) {
-        const entries = await fs.readdir(dir, { withFileTypes: true });
-        
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name);
-          
-          if (entry.isDirectory()) {
-            // Skip if this is a user directory (we're already in the correct user's directory)
-            if (entry.name !== userId) {
-              await getStoryboards(fullPath);
-            }
-          } else if (entry.name.endsWith('_storyboard.json')) {
-            const stats = await getFileStats(fullPath);
-            
-            // Read storyboard data to get scene count and metadata
-            let sceneCount = 0;
-            let metadata = null;
-            try {
-              const content = await fs.readFile(fullPath, 'utf8');
-              const storyboardData = JSON.parse(content);
-              sceneCount = storyboardData.scenes?.length || 0;
-              metadata = storyboardData.metadata || { sceneCount };
-            } catch (err) {
-              console.error('Error reading storyboard data:', err);
-            }
-
-            // Get relative path from storyboards directory
-            // Extract scriptId from parent directory and full filename for id
-            const parentDir = path.basename(path.dirname(fullPath));
-            const fileName = path.basename(fullPath);
-
-            console.log('Found storyboard:', {
-              parentDir,
-              fileName,
-              fullPath,
-              sceneCount,
-              metadata
-            });
-
-            files.push({
-              id: `${parentDir}/${fileName}`,
-              name: parentDir.split('_')[0], // Get original title without timestamp
-              type: 'storyboard',
-              createdAt: stats.createdAt,
-              size: stats.size,
-              metadata
-            });
-          }
+    // Get scripts if no type specified or type is 'script'
+    if (!type || type === 'script') {
+      try {
+        const scriptsDir = path.join(STORAGE_BASE, 'scripts', userId);
+        const scriptFiles = await fs.readdir(scriptsDir);
+        for (const fileName of scriptFiles) {
+          const filePath = path.join(scriptsDir, fileName);
+          const stats = await getFileStats(filePath);
+          files.push({
+            id: fileName,
+            name: fileName.split('_')[0], // Get original title
+            type: 'script',
+            createdAt: stats.createdAt,
+            size: stats.size
+          });
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          console.error('Error reading scripts directory:', error);
         }
       }
+    }
 
-      console.log('Searching for storyboards in:', storyboardsDir);
-      await getStoryboards(storyboardsDir);
-      console.log('Found storyboard files:', files.filter(f => f.type === 'storyboard'));
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.error('Error reading storyboards directory:', error);
+    // Get screenplays if no type specified or type is 'movie'
+    if (!type || type === 'movie') {
+      try {
+        const screenplaysDir = path.join(STORAGE_BASE, 'screenplays', userId);
+        const screenplayFiles = await fs.readdir(screenplaysDir);
+        for (const fileName of screenplayFiles) {
+          const filePath = path.join(screenplaysDir, fileName);
+          const stats = await getFileStats(filePath);
+          files.push({
+            id: fileName,
+            name: fileName.split('_')[0], // Get original title
+            type: 'movie',
+            createdAt: stats.createdAt,
+            size: stats.size
+          });
+        }
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          console.error('Error reading screenplays directory:', error);
+        }
+      }
+    }
+
+    // Get storyboards if no type specified or type is 'storyboard'
+    if (!type || type === 'storyboard') {
+      try {
+        const storyboardsDir = path.join(STORAGE_BASE, 'storyboards', userId);
+        async function getStoryboards(dir) {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          
+          for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            
+            if (entry.isDirectory()) {
+              if (entry.name !== userId) {
+                await getStoryboards(fullPath);
+              }
+            } else if (entry.name.endsWith('_storyboard.json')) {
+              const stats = await getFileStats(fullPath);
+              
+              let sceneCount = 0;
+              let metadata = null;
+              try {
+                const content = await fs.readFile(fullPath, 'utf8');
+                const storyboardData = JSON.parse(content);
+                sceneCount = storyboardData.scenes?.length || 0;
+                metadata = storyboardData.metadata || { sceneCount };
+              } catch (err) {
+                console.error('Error reading storyboard data:', err);
+              }
+
+              const parentDir = path.basename(path.dirname(fullPath));
+              const fileName = path.basename(fullPath);
+
+              files.push({
+                id: `${parentDir}/${fileName}`,
+                name: parentDir.split('_')[0],
+                type: 'storyboard',
+                createdAt: stats.createdAt,
+                size: stats.size,
+                metadata
+              });
+            }
+          }
+        }
+
+        await getStoryboards(storyboardsDir);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          console.error('Error reading storyboards directory:', error);
+        }
       }
     }
 
