@@ -19,11 +19,13 @@ dotenv.config({ path: "../.env" });
 
 const app = express();
 const port = process.env.PORT || 3000;
+const host = process.env.HOST || "localhost";
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:5173", // Frontend dev server
+    origin: frontendUrl, // Frontend URL from environment
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -53,11 +55,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something broke!" });
 });
 
-app.listen(port, async () => {
+app.listen(port, host, async () => {
   try {
     await initializeStorage();
     console.log("Storage directories initialized");
-    console.log(`Server running at http://192.168.1.3:${port}`);
+    console.log(`Server running at http://${host}:${port}`);
   } catch (error) {
     console.error("Failed to initialize storage:", error);
     process.exit(1);
