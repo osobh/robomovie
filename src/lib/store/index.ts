@@ -33,6 +33,14 @@ export interface Scene {
     action: string;
     effects: string;
     lighting: string;
+    scriptSegment: string;
+    dialogue: {
+      speaker: string;
+      text: string;
+    } | null;
+    referenceImage?: string;
+    isGeneratingImage?: boolean;
+    revisedPrompt?: string;
   }[];
   technicalRequirements: {
     equipment: string[];

@@ -23,7 +23,12 @@ const STORYBOARD_PROMPT = `As a professional storyboard artist and script superv
           "composition": "string",
           "action": "string",
           "effects": "string",
-          "lighting": "string"
+          "lighting": "string",
+          "scriptSegment": "string",  // The specific part of the script (action/description) relevant to this shot
+          "dialogue": {               // Any character dialogue that occurs during this shot
+            "speaker": "string",      // The character or entity speaking
+            "text": "string"         // The actual dialogue text
+          }
         }
       ],
       "technicalRequirements": {
@@ -38,15 +43,38 @@ const STORYBOARD_PROMPT = `As a professional storyboard artist and script superv
         "mood": "string",
         "colorPalette": ["string"],
         "soundCues": ["string"]
-      },
-      "script": "string"
+      }
     }
   ]
 }
 
-For each scene, include the actual script content that you used to create the shot for that scene in the "script" field.
+For each shot, break down the script content into:
+1. scriptSegment: The specific action, description, or scene direction that corresponds to what we see in this shot
+2. dialogue: Any character dialogue that occurs during this shot
 
-Analyze the script and break it down into scenes, providing detailed information for each field. Be creative but precise in your descriptions.`;
+Example shot breakdown:
+{
+  "number": 1,
+  "angle": "Medium Shot",
+  "movement": "Static",
+  "action": "Focus on Sarah at table",
+  "scriptSegment": "Sarah sits at a corner table, nervously tapping her fingers on her coffee cup.",
+  "dialogue": null
+}
+
+{
+  "number": 2,
+  "angle": "Close-Up",
+  "movement": "Static",
+  "action": "Show Sarah checking phone",
+  "scriptSegment": "(checking her phone)",
+  "dialogue": {
+    "speaker": "SARAH",
+    "text": "He's late again..."
+  }
+}
+
+Analyze the script and break it down into scenes and shots, providing detailed information for each field. Be creative but precise in your descriptions. Ensure that every shot has its corresponding script segment and any relevant dialogue.`;
 
 router.post('/storyboarding/process-script', async (req, res) => {
   try {

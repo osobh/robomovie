@@ -1,0 +1,146 @@
+{
+  "scenes": [
+    {
+      "title": "Landing on the Alien Planet",
+      "sceneNumber": 1,
+      "location": "Remote Alien Planet",
+      "timeOfDay": "Night",
+      "characters": [
+        "Commander Jane",
+        "Lieutenant Carl"
+      ],
+      "description": "Jane and Carl land on an alien planet and discover a mysterious golden egg.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Wide Shot",
+          "movement": "Static",
+          "composition": "Full view of the Time Travel Craft and surrounding alien terrain",
+          "action": "Time Travel Craft landing on the alien planet",
+          "effects": "The vessel radiates blue lights",
+          "lighting": "Artificial lighting from the craft and ambient lighting from alien planet",
+          "scriptSegment": "The TIME TRAVEL CRAFT, a sleek vessel radiating luminous blue lights, softly lands on the gritty, gold-hued terrain.",
+          "dialogue": null
+        },
+        {
+          "number": 2,
+          "angle": "Medium Shot",
+          "movement": "Static",
+          "composition": "Jane and Carl exiting from the craft",
+          "action": "Jane and Carl step onto the alien soil",
+          "effects": "None",
+          "lighting": "Artificial lighting from the craft",
+          "scriptSegment": "The hatch opens, revealing our TIME TRAVELLERS, COMMANDER JANE and LIEUTENANT CARL. The two, encased in high-tech suits, carefully step onto the alien soil, gazing in awe at gigantic alien plants swaying in the eerie winds.",
+          "dialogue": null
+        },
+        {
+          "number": 3,
+          "angle": "Close-Up",
+          "movement": "Static",
+          "composition": "Focus on Jane and Carl's faces",
+          "action": "Jane and Carl converse",
+          "effects": "None",
+          "lighting": "Artificial lighting from the suits",
+          "scriptSegment": "COMMANDER JANE \n(swallowing hard)\nSo far, so historical.\n\nLIEUTENANT CARL \n(faces Jane, grinning)\nCommander, you really need to work on your one-liners.",
+          "dialogue": {
+            "speaker": "Lieutenant Carl",
+            "text": "Commander, you really need to work on your one-liners."
+          }
+        },
+        {
+          "number": 4,
+          "angle": "Medium Shot",
+          "movement": "Pan",
+          "composition": "Focus on the golden egg in the plant's leaf",
+          "action": "Carl moves towards the golden egg",
+          "effects": "None",
+          "lighting": "Natural ambient lighting from the alien planet",
+          "scriptSegment": "Suddenly, they spot a gleaming object nestled in a plant's curled leaf - a golden egg, roughly the size of a human head. Carl rushes forward, enchantment replacing his cavalier demeanor.",
+          "dialogue": null
+        },
+        {
+          "number": 5,
+          "angle": "Close-Up",
+          "movement": "Static",
+          "composition": "Focus on Carl picking up the egg",
+          "action": "Carl picks up the egg",
+          "effects": "The egg vibrates and illuminates",
+          "lighting": "Natural lighting from the glowing egg",
+          "scriptSegment": "LIEUTENANT CARL \n(slowly picks the 'egg')\nIt's... it's warm, Commander. Suddenly, the egg vibrates, emitting a low, pulsating hum. It illuminates, casting an ethereal glow on their faces.",
+          "dialogue": {
+            "speaker": "Lieutenant Carl",
+            "text": "It's... it's warm, Commander."
+          }
+        },
+        {
+          "number": 6,
+          "angle": "Wide Shot",
+          "movement": "Static",
+          "composition": "Full view of Carl, Jane, and the glowing egg",
+          "action": "Holographic message appears from the egg",
+          "effects": "Holographic symbols float from the egg",
+          "lighting": "Artificial lighting from the glowing egg",
+          "scriptSegment": "Astonishing symbols float from the egg, creating a swirling holographic message in a cryptic, alien language.",
+          "dialogue": null
+        },
+        {
+          "number": 7,
+          "angle": "Close-Up",
+          "movement": "Static",
+          "composition": "Focus on Jane and Carl's faces",
+          "action": "Jane and Carl exchange a glance",
+          "effects": "None",
+          "lighting": "Artificial lighting from the glowing egg",
+          "scriptSegment": "Carl and Jane exchange a startled glance.",
+          "dialogue": null
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "High-tech suits",
+          "Time Travel Craft"
+        ],
+        "vfx": [
+          "Craft's blue lights",
+          "Golden egg's glow",
+          "Holographic message"
+        ],
+        "practicalEffects": [
+          "Alien planet set",
+          "Alien plants",
+          "Golden egg prop"
+        ],
+        "props": [
+          "Golden egg",
+          "High-tech suits"
+        ],
+        "safety": [
+          "Handling of props"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Commander Jane": "Curious but cautious",
+          "Lieutenant Carl": "Excited and enchanted"
+        },
+        "mood": "Mysterious and awe-inspiring",
+        "colorPalette": [
+          "Blue",
+          "Gold",
+          "Black"
+        ],
+        "soundCues": [
+          "Craft landing",
+          "Eerie winds",
+          "Egg's low hum"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "scriptId": "time_1743633122654",
+    "createdAt": "2025-04-02T22:33:04.117Z",
+    "sceneCount": 1,
+    "userId": "a7315e3e-0e3a-4679-ab66-8c478a8351d9"
+  }
+}

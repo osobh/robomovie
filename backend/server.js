@@ -7,6 +7,7 @@ import { initializeStorage } from "./services/storage.js";
 import uploadRoutes from "./routes/upload.js";
 import generateScriptRoutes from "./routes/generate-script.js";
 import storyboardingRoutes from "./routes/storyboarding.js";
+import referenceImageRoutes from "./routes/reference-image.js";
 import movieEditingRoutes from "./routes/movie-editing.js";
 import theatreRoutes from "./routes/theatre.js";
 import dashboardRoutes from "./routes/dashboard.js";
@@ -31,12 +32,14 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Routes
 app.use("/api", uploadRoutes);
 app.use("/api", generateScriptRoutes);
 app.use("/api", storyboardingRoutes);
+app.use("/api", referenceImageRoutes);
 app.use("/api", movieEditingRoutes); // Now includes audio and assembly functionality
 app.use("/api", theatreRoutes);
 app.use("/api/dashboard", dashboardRoutes);

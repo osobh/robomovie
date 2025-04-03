@@ -21,6 +21,7 @@ interface SceneModalProps {
 }
 
 function SceneModal({ scene }: SceneModalProps) {
+  const { workflow } = useStore();
   return (
     <DialogContent className="bg-[#1A1A1A] text-white max-w-4xl max-h-[80vh] overflow-y-auto">
       <DialogHeader>
@@ -52,35 +53,202 @@ function SceneModal({ scene }: SceneModalProps) {
 
         <div>
           <h3 className="text-lg font-semibold text-[#FFA500] mb-2">Shot List</h3>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {scene.shots.map((shot: Scene['shots'][0]) => (
               <div key={shot.number} className="bg-[#2A2A2A] p-4 rounded-lg">
-                <h4 className="font-semibold mb-2">Shot {shot.number}</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <p className="text-gray-400">Angle</p>
-                    <p className="text-white">{shot.angle}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Movement</p>
-                    <p className="text-white">{shot.movement}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Composition</p>
-                    <p className="text-white">{shot.composition}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Lighting</p>
-                    <p className="text-white">{shot.lighting}</p>
+                <div className="flex justify-between items-start mb-4">
+                  <h4 className="font-semibold text-lg">Shot {shot.number}</h4>
+                  <div className="px-2 py-1 bg-[#1ABC9C]/10 text-[#1ABC9C] rounded text-sm">
+                    {shot.angle}
                   </div>
                 </div>
-                <div className="mt-2">
-                  <p className="text-gray-400">Action</p>
-                  <p className="text-white">{shot.action}</p>
-                </div>
-                <div className="mt-2">
-                  <p className="text-gray-400">Effects</p>
-                  <p className="text-white">{shot.effects}</p>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column - Technical Details & Reference Image */}
+                  <div className="space-y-6">
+                    {/* Technical Details */}
+                    <div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-gray-400">Movement</p>
+                          <p className="text-white">{shot.movement}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Composition</p>
+                          <p className="text-white">{shot.composition}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Lighting</p>
+                          <p className="text-white">{shot.lighting}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Effects</p>
+                          <p className="text-white">{shot.effects}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <p className="text-gray-400">Action</p>
+                        <p className="text-white">{shot.action}</p>
+                      </div>
+                    </div>
+
+                    {/* Reference Image Section */}
+                    <div className="border-t border-[#3A3A3A] pt-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="text-gray-400 font-medium">Reference Image</p>
+                        <Button
+                          size="sm"
+                          className="bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 text-white"
+                          onClick={async () => {
+                            try {
+                              // Update shot state to show loading
+                              const updatedShots = [...scene.shots];
+                              const shotIndex = updatedShots.findIndex(s => s.number === shot.number);
+                              updatedShots[shotIndex] = { ...shot, isGeneratingImage: true };
+                              useStore.getState().setScenes(
+                                workflow!.scenes!.map((s: Scene) => 
+                                  s.id === scene.id ? { ...s, shots: updatedShots } : s
+                                )
+                              );
+
+                              // Generate reference image
+                              const response = await fetch(`${API_URL}/api/generate-reference`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ shot, scene }),
+                              });
+
+                              if (!response.ok) throw new Error('Failed to generate reference image');
+                              
+                              const data = await response.json();
+                              console.log('Reference image response:', data);
+                              
+                              if (!data.success || !data.imageData) {
+                                throw new Error(data.error || 'Failed to get image data');
+                              }
+                              
+                              // Create a new shot object with the image data
+                              const newShot = {
+                                ...shot,
+                                isGeneratingImage: false,
+                                referenceImage: `data:image/png;base64,${data.imageData}`,
+                                revisedPrompt: data.revisedPrompt
+                              };
+                              
+                              // Create a new array with the updated shot
+                              const newShots = [...scene.shots];
+                              newShots[shotIndex] = newShot;
+                              
+                              // Update scenes with the new shots array
+                              const updatedScene = {
+                                ...scene,
+                                shots: newShots
+                              };
+                              
+                              // Update scenes in store with a fresh reference
+                              useStore.getState().setScenes(
+                                workflow!.scenes!.map((s: Scene) => 
+                                  s.id === scene.id ? updatedScene : s
+                                )
+                              );
+                            } catch (error) {
+                              console.error('Error generating reference image:', error);
+                              // Reset generating state on error
+                              const updatedShots = [...scene.shots];
+                              const shotIndex = updatedShots.findIndex(s => s.number === shot.number);
+                              updatedShots[shotIndex] = { ...shot, isGeneratingImage: false };
+                              useStore.getState().setScenes(
+                                workflow!.scenes!.map((s: Scene) => 
+                                  s.id === scene.id ? { ...s, shots: updatedShots } : s
+                                )
+                              );
+                            }
+                          }}
+                          disabled={shot.isGeneratingImage}
+                        >
+                          {shot.isGeneratingImage ? (
+                            <div className="flex items-center">
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              <span>Generating...</span>
+                            </div>
+                          ) : shot.referenceImage ? (
+                            'Regenerate'
+                          ) : (
+                            'Generate Reference'
+                          )}
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {/* DALL-E's Interpretation */}
+                        {shot.revisedPrompt && (
+                          <div className="bg-[#1A1A1A] p-3 rounded text-sm">
+                            <p className="text-gray-400 mb-2">DALL-E's Interpretation:</p>
+                            <p className="text-[#1ABC9C]">{shot.revisedPrompt}</p>
+                          </div>
+                        )}
+
+                        {/* Reference Image Display */}
+                        <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                          {shot.isGeneratingImage && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                              <div className="text-center space-y-3">
+                                <Loader2 className="w-12 h-12 animate-spin mx-auto text-[#1ABC9C]" />
+                                <p className="text-sm text-white font-medium">Creating cinematic shot...</p>
+                                <p className="text-xs text-gray-400">This may take a few moments</p>
+                              </div>
+                            </div>
+                          )}
+                          {!shot.isGeneratingImage && shot.referenceImage && (
+                            <img
+                              src={shot.referenceImage}
+                              alt={`Reference for shot ${shot.number}`}
+                              className="w-full h-full object-contain"
+                              onError={(e) => {
+                                console.error('Image failed to load:', e);
+                                e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                                e.currentTarget.className = 'w-12 h-12 text-red-500';
+                              }}
+                            />
+                          )}
+                          {!shot.isGeneratingImage && !shot.referenceImage && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-center space-y-2">
+                                <ImageIcon className="w-12 h-12 text-gray-600 mx-auto" />
+                                <p className="text-sm text-gray-400">Click generate to create reference image</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Right Column - Script Content */}
+                  <div className="space-y-4 border-l border-[#3A3A3A] pl-6">
+                    {shot.scriptSegment && (
+                      <div>
+                        <p className="text-gray-400 mb-2">Script Direction</p>
+                        <p className="text-white bg-[#1A1A1A] p-3 rounded">
+                          {shot.scriptSegment}
+                        </p>
+                      </div>
+                    )}
+                    {shot.dialogue && (
+                      <div>
+                        <p className="text-gray-400 mb-2">Dialogue</p>
+                        <div className="bg-[#1A1A1A] p-3 rounded font-mono space-y-1">
+                          <p className="text-yellow-500 font-bold uppercase">
+                            {shot.dialogue.speaker}
+                          </p>
+                          <p className="text-[#1ABC9C]">
+                            {shot.dialogue.text}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -128,13 +296,6 @@ function SceneModal({ scene }: SceneModalProps) {
                 <li key={i}>{cue}</li>
               ))}
             </ul>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold text-[#FFA500] mb-2">Script</h3>
-          <div className="bg-[#2A2A2A] p-4 rounded-lg">
-            <pre className="text-white whitespace-pre-wrap font-mono text-sm">{scene.script}</pre>
           </div>
         </div>
 
