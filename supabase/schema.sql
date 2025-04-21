@@ -1,88 +1,20 @@
-/*
-  Comprehensive Schema for RoboMovie
-  
-  Tables:
-  1. users - Extended user profiles
-  2. movie_settings - Movie configuration
-  3. scripts - Script content and metadata
-  4. scenes - Scene breakdowns
-  5. movies - Final assembled movies
-  6. settings - User preferences and API keys
-  7. files - File tracking system
-  8. script_files - Script file metadata
-*/
+-- === Consolidated schema.sql for Robomovie (generated from all migrations) ===
 
--- Create auth schema and base users table (for standalone PostgreSQL)
-CREATE SCHEMA IF NOT EXISTS auth;
-
-CREATE TABLE IF NOT EXISTS auth.users (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  email text UNIQUE NOT NULL,
-  raw_user_meta_data jsonb,
-  created_at timestamptz DEFAULT now()
-);
-
--- Create authenticated role if it doesn't exist
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
-    CREATE ROLE authenticated;
-  END IF;
-END;
-$$;
-
--- Grant privileges to authenticated role
-GRANT USAGE ON SCHEMA auth TO authenticated;
-GRANT SELECT ON auth.users TO authenticated;
-
--- Enable UUID extension
+-- Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Create users table to extend auth.users
-CREATE TABLE IF NOT EXISTS users (
+-- Tables (in dependency order)
+CREATE TABLE IF NOT EXISTS public.users (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text,
+  email text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
 
--- Create movie_settings table
-CREATE TABLE IF NOT EXISTS movie_settings (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  title text NOT NULL,
-  genre text NOT NULL,
-  topic text,
-  mode text NOT NULL,
-  length_minutes integer NOT NULL,
-  number_of_scenes integer NOT NULL,
-  provider text,
-  provider_tier text,
-  api_key text,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now(),
-  
-  -- Constraints
-  CONSTRAINT valid_mode CHECK (mode IN ('managed', 'self_service')),
-  CONSTRAINT valid_length CHECK (length_minutes IN (1, 5, 15, 30, 60)),
-  CONSTRAINT valid_provider CHECK (
-    (mode = 'managed' AND provider IS NULL) OR
-    (mode = 'self_service' AND provider IN ('openai', 'anthropic', 'deepseek', 'pika', 'runway', 'sora'))
-  ),
-  CONSTRAINT valid_provider_tier CHECK (
-    (mode = 'managed' AND provider_tier IS NULL) OR
-    (mode = 'self_service' AND provider_tier IN ('basic', 'pro', 'enterprise'))
-  ),
-  CONSTRAINT api_key_required_for_self_service CHECK (
-    (mode = 'managed' AND api_key IS NULL) OR
-    (mode = 'self_service' AND api_key IS NOT NULL)
-  )
-);
-
--- Create scripts table
 CREATE TABLE IF NOT EXISTS scripts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   title text NOT NULL,
   content text NOT NULL,
   file_path text,
@@ -92,7 +24,26 @@ CREATE TABLE IF NOT EXISTS scripts (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create scenes table
+CREATE TABLE IF NOT EXISTS script_files (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  filename text NOT NULL,
+  content_type text NOT NULL,
+  size bigint NOT NULL,
+  path text NOT NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  CONSTRAINT valid_content_types CHECK (
+    content_type = ANY (ARRAY[
+      'text/plain',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ])
+  ),
+  CONSTRAINT valid_file_size CHECK (size <= 5242880)
+);
+
 CREATE TABLE IF NOT EXISTS scenes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   script_id uuid REFERENCES scripts(id) ON DELETE CASCADE NOT NULL,
@@ -111,10 +62,9 @@ CREATE TABLE IF NOT EXISTS scenes (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create movies table
 CREATE TABLE IF NOT EXISTS movies (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  user_id uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   script_id uuid REFERENCES scripts(id) ON DELETE CASCADE NOT NULL,
   title text NOT NULL,
   description text,
@@ -125,30 +75,32 @@ CREATE TABLE IF NOT EXISTS movies (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create settings table
 CREATE TABLE IF NOT EXISTS settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE CASCADE NOT NULL,
-  preferred_llm text CHECK (preferred_llm IN ('openai', 'anthropic', 'deepseek')) DEFAULT 'openai',
-  preferred_video_gen text CHECK (preferred_video_gen IN ('pika', 'runway', 'sora')) DEFAULT 'pika',
-  openai_key text CHECK (openai_key ~ '^sk-[A-Za-z0-9]{32,}$' OR openai_key IS NULL),
-  anthropic_key text CHECK (anthropic_key ~ '^sk-ant-[A-Za-z0-9]{32,}$' OR anthropic_key IS NULL),
+  user_id uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  preferred_llm text NOT NULL DEFAULT 'openai' CHECK (preferred_llm = ANY (ARRAY['openai', 'anthropic', 'deepseek'])),
+  preferred_video_gen text NOT NULL DEFAULT 'pika' CHECK (preferred_video_gen = ANY (ARRAY['pika', 'runway', 'sora'])),
+  openai_key text,
+  anthropic_key text,
   deepseek_key text,
   pika_key text,
   runway_key text,
   sora_key text,
-  twitter_handle text CHECK (twitter_handle ~ '^@[A-Za-z0-9_]{1,15}$' OR twitter_handle IS NULL),
-  instagram_handle text CHECK (instagram_handle ~ '^@[A-Za-z0-9_.]{1,30}$' OR instagram_handle IS NULL),
+  twitter_handle text,
+  instagram_handle text,
   youtube_channel text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  UNIQUE (user_id)
+  UNIQUE (user_id),
+  CONSTRAINT settings_twitter_handle_check CHECK (twitter_handle ~ '^@[A-Za-z0-9_]{1,15}$' OR twitter_handle IS NULL),
+  CONSTRAINT settings_instagram_handle_check CHECK (instagram_handle ~ '^@[A-Za-z0-9_.]{1,30}$' OR instagram_handle IS NULL),
+  CONSTRAINT settings_openai_key_check CHECK (openai_key ~ '^sk-[A-Za-z0-9]{32,}$' OR openai_key IS NULL),
+  CONSTRAINT settings_anthropic_key_check CHECK (anthropic_key ~ '^sk-ant-[A-Za-z0-9]{32,}$' OR anthropic_key IS NULL)
 );
 
--- Create files table
 CREATE TABLE IF NOT EXISTS files (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  user_id uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
   name text NOT NULL,
   type text CHECK (type IN ('script', 'video', 'audio')) NOT NULL,
   size bigint NOT NULL,
@@ -159,29 +111,23 @@ CREATE TABLE IF NOT EXISTS files (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create script_files table
-CREATE TABLE IF NOT EXISTS script_files (
+CREATE TABLE IF NOT EXISTS movie_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  filename text NOT NULL,
-  content_type text NOT NULL,
-  size bigint NOT NULL,
-  path text NOT NULL,
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  mode text NOT NULL,
+  length_minutes integer NOT NULL,
+  genre text NOT NULL,
+  number_of_scenes integer NOT NULL,
+  topic text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
-  CONSTRAINT valid_content_types CHECK (
-    content_type = ANY (ARRAY[
-      'text/plain',
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ])
-  ),
-  CONSTRAINT valid_file_size CHECK (size <= 5242880) -- 5MB limit
+  CONSTRAINT valid_mode CHECK (mode IN ('managed', 'self_service')),
+  CONSTRAINT valid_length CHECK (length_minutes IN (1, 5, 15, 30, 60)),
+  CONSTRAINT valid_number_of_scenes CHECK (number_of_scenes > 0)
 );
 
--- Create indexes
-CREATE INDEX IF NOT EXISTS idx_movie_settings_user_id ON movie_settings(user_id);
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_scripts_user_id ON scripts(user_id);
 CREATE INDEX IF NOT EXISTS idx_scenes_script_id ON scenes(script_id);
 CREATE INDEX IF NOT EXISTS idx_movies_user_id ON movies(user_id);
@@ -189,146 +135,9 @@ CREATE INDEX IF NOT EXISTS idx_movies_script_id ON movies(script_id);
 CREATE INDEX IF NOT EXISTS idx_files_user_id ON files(user_id);
 CREATE INDEX IF NOT EXISTS idx_files_type ON files(type);
 CREATE INDEX IF NOT EXISTS idx_script_files_user_id ON script_files(user_id);
+CREATE INDEX IF NOT EXISTS idx_movie_settings_user_id ON movie_settings(user_id);
 
--- Enable Row Level Security
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE movie_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE scripts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE scenes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE files ENABLE ROW LEVEL SECURITY;
-ALTER TABLE script_files ENABLE ROW LEVEL SECURITY;
-
--- Create RLS Policies (using current_user as a substitute for auth.uid())
--- Note: Replace with auth.uid() if using Supabase
-
--- Users policies
-CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT TO authenticated
-  USING (id::text = current_user);
-
-CREATE POLICY "Users can update own profile" ON users
-  FOR UPDATE TO authenticated
-  USING (id::text = current_user);
-
--- Movie Settings policies
-CREATE POLICY "Users can view own movie settings" ON movie_settings
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can create movie settings" ON movie_settings
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id::text = current_user);
-
-CREATE POLICY "Users can update own movie settings" ON movie_settings
-  FOR UPDATE TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can delete own movie settings" ON movie_settings
-  FOR DELETE TO authenticated
-  USING (user_id::text = current_user);
-
--- Scripts policies
-CREATE POLICY "Users can view own scripts" ON scripts
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can create scripts" ON scripts
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id::text = current_user);
-
-CREATE POLICY "Users can update own scripts" ON scripts
-  FOR UPDATE TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can delete own scripts" ON scripts
-  FOR DELETE TO authenticated
-  USING (user_id::text = current_user);
-
--- Scenes policies
-CREATE POLICY "Users can view scenes of own scripts" ON scenes
-  FOR SELECT TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM scripts
-    WHERE scripts.id = scenes.script_id
-    AND scripts.user_id::text = current_user
-  ));
-
-CREATE POLICY "Users can create scenes for own scripts" ON scenes
-  FOR INSERT TO authenticated
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM scripts
-    WHERE scripts.id = scenes.script_id
-    AND scripts.user_id::text = current_user
-  ));
-
-CREATE POLICY "Users can update scenes of own scripts" ON scenes
-  FOR UPDATE TO authenticated
-  USING (EXISTS (
-    SELECT 1 FROM scripts
-    WHERE scripts.id = scenes.script_id
-    AND scripts.user_id::text = current_user
-  ));
-
--- Movies policies
-CREATE POLICY "Users can view own movies" ON movies
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can create movies" ON movies
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id::text = current_user);
-
-CREATE POLICY "Users can update own movies" ON movies
-  FOR UPDATE TO authenticated
-  USING (user_id::text = current_user);
-
--- Settings policies
-CREATE POLICY "Users can view own settings" ON settings
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can manage own settings" ON settings
-  FOR ALL TO authenticated
-  USING (user_id::text = current_user)
-  WITH CHECK (user_id::text = current_user);
-
--- Files policies
-CREATE POLICY "Users can view own files" ON files
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can create files" ON files
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id::text = current_user);
-
-CREATE POLICY "Users can update own files" ON files
-  FOR UPDATE TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can delete own files" ON files
-  FOR DELETE TO authenticated
-  USING (user_id::text = current_user);
-
--- Script Files policies
-CREATE POLICY "Users can view own script files" ON script_files
-  FOR SELECT TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can insert own script files" ON script_files
-  FOR INSERT TO authenticated
-  WITH CHECK (user_id::text = current_user);
-
-CREATE POLICY "Users can update own script files" ON script_files
-  FOR 최대UPDATE TO authenticated
-  USING (user_id::text = current_user);
-
-CREATE POLICY "Users can delete own script files" ON script_files
-  FOR DELETE TO authenticated
-  USING (user_id::text = current_user);
-
--- Create updated_at function
+-- Functions and Triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -337,29 +146,37 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger to automatically create user records for new auth users
+CREATE OR REPLACE FUNCTION update_script_files_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
+  INSERT INTO public.users (id, full_name, email)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.email)
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION ensure_user_exists()
+RETURNS TRIGGER AS $$
+BEGIN
   INSERT INTO public.users (id, full_name)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name');
+  VALUES (NEW.user_id, (SELECT raw_user_meta_data->>'full_name' FROM auth.users WHERE id = NEW.user_id))
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create auth user trigger
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- Create updated_at triggers
+-- Triggers for updated_at
 CREATE TRIGGER update_users_updated_at
-  BEFORE UPDATE ON users
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_movie_settings_updated_at
-  BEFORE UPDATE ON movie_settings
+  BEFORE UPDATE ON public.users
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
@@ -391,4 +208,273 @@ CREATE TRIGGER update_files_updated_at
 CREATE TRIGGER update_script_files_updated_at
   BEFORE UPDATE ON script_files
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+  EXECUTE FUNCTION update_script_files_updated_at();
+
+-- Trigger for user creation from auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Trigger to ensure user exists before movie_settings insert
+DROP TRIGGER IF EXISTS ensure_user_exists_before_movie_settings ON movie_settings;
+CREATE TRIGGER ensure_user_exists_before_movie_settings
+  BEFORE INSERT ON movie_settings
+  FOR EACH ROW
+  EXECUTE FUNCTION ensure_user_exists();
+
+-- RLS and Policies
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scripts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE script_files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scenes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE files ENABLE ROW LEVEL SECURITY;
+ALTER TABLE movie_settings ENABLE ROW LEVEL SECURITY;
+
+-- Users policies
+DROP POLICY IF EXISTS "Users can view own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+DROP POLICY IF EXISTS "Allow insert during signup" ON public.users;
+DROP POLICY IF EXISTS "Enable all access for service role" ON public.users;
+
+CREATE POLICY "Users can view own profile" ON public.users
+  FOR SELECT TO authenticated
+  USING (id = auth.uid());
+
+CREATE POLICY "Users can update own profile" ON public.users
+  FOR UPDATE TO authenticated
+  USING (id = auth.uid());
+
+CREATE POLICY "Allow insert during signup" ON public.users
+  FOR INSERT TO authenticated
+  WITH CHECK (id = auth.uid());
+
+CREATE POLICY "Enable all access for service role" ON public.users
+  FOR ALL TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+-- Scripts policies
+DROP POLICY IF EXISTS "Users can view own scripts" ON scripts;
+DROP POLICY IF EXISTS "Users can create scripts" ON scripts;
+DROP POLICY IF EXISTS "Users can update own scripts" ON scripts;
+DROP POLICY IF EXISTS "Users can delete own scripts" ON scripts;
+
+CREATE POLICY "Users can view own scripts"
+  ON scripts FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can create scripts"
+  ON scripts FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update own scripts"
+  ON scripts FOR UPDATE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can delete own scripts"
+  ON scripts FOR DELETE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+-- Script files policies
+DROP POLICY IF EXISTS "Users can view own script files" ON script_files;
+DROP POLICY IF EXISTS "Users can insert own script files" ON script_files;
+DROP POLICY IF EXISTS "Users can update own script files" ON script_files;
+DROP POLICY IF EXISTS "Users can delete own script files" ON script_files;
+
+CREATE POLICY "Users can view own script files"
+  ON script_files FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own script files"
+  ON script_files FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own script files"
+  ON script_files FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own script files"
+  ON script_files FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Scenes policies
+DROP POLICY IF EXISTS "Users can view scenes of own scripts" ON scenes;
+DROP POLICY IF EXISTS "Users can create scenes for own scripts" ON scenes;
+DROP POLICY IF EXISTS "Users can update scenes of own scripts" ON scenes;
+
+CREATE POLICY "Users can view scenes of own scripts"
+  ON scenes FOR SELECT
+  TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM scripts
+    WHERE scripts.id = scenes.script_id
+    AND scripts.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can create scenes for own scripts"
+  ON scenes FOR INSERT
+  TO authenticated
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM scripts
+    WHERE scripts.id = scenes.script_id
+    AND scripts.user_id = auth.uid()
+  ));
+
+CREATE POLICY "Users can update scenes of own scripts"
+  ON scenes FOR UPDATE
+  TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM scripts
+    WHERE scripts.id = scenes.script_id
+    AND scripts.user_id = auth.uid()
+  ));
+
+-- Movies policies
+DROP POLICY IF EXISTS "Users can view own movies" ON movies;
+DROP POLICY IF EXISTS "Users can create movies" ON movies;
+DROP POLICY IF EXISTS "Users can update own movies" ON movies;
+
+CREATE POLICY "Users can view own movies"
+  ON movies FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can create movies"
+  ON movies FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update own movies"
+  ON movies FOR UPDATE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+-- Settings policies
+DROP POLICY IF EXISTS "Users can view own settings" ON settings;
+DROP POLICY IF EXISTS "Users can manage own settings" ON settings;
+
+CREATE POLICY "Users can view own settings"
+  ON settings FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can manage own settings"
+  ON settings FOR ALL
+  TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- Files policies
+DROP POLICY IF EXISTS "Users can view own files" ON files;
+DROP POLICY IF EXISTS "Users can create files" ON files;
+DROP POLICY IF EXISTS "Users can update own files" ON files;
+DROP POLICY IF EXISTS "Users can delete own files" ON files;
+
+CREATE POLICY "Users can view own files"
+  ON files FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can create files"
+  ON files FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update own files"
+  ON files FOR UPDATE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can delete own files"
+  ON files FOR DELETE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+-- Movie settings policies
+DROP POLICY IF EXISTS "Users can view own movie settings" ON movie_settings;
+DROP POLICY IF EXISTS "Users can create movie settings" ON movie_settings;
+DROP POLICY IF EXISTS "Users can update own movie settings" ON movie_settings;
+DROP POLICY IF EXISTS "Users can delete own movie settings" ON movie_settings;
+
+CREATE POLICY "Users can view own movie settings" ON movie_settings
+  FOR SELECT TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can create movie settings" ON movie_settings
+  FOR INSERT TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update own movie settings" ON movie_settings
+  FOR UPDATE TO authenticated
+  USING (user_id = auth.uid());
+
+CREATE POLICY "Users can delete own movie settings" ON movie_settings
+  FOR DELETE TO authenticated
+  USING (user_id = auth.uid());
+
+-- Storage bucket and policies for scripts
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('scripts', 'scripts', false)
+ON CONFLICT (id) DO NOTHING;
+
+UPDATE storage.buckets
+SET public = false,
+    avif_autodetection = false,
+    file_size_limit = 52428800,
+    allowed_mime_types = ARRAY['text/plain'],
+    owner = null
+WHERE id = 'scripts';
+
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can read own scripts" ON storage.objects;
+DROP POLICY IF EXISTS "Users can insert own scripts" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update own scripts" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete own scripts" ON storage.objects;
+
+CREATE POLICY "Users can read own scripts"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'scripts' 
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+CREATE POLICY "Users can insert own scripts"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'scripts' 
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+CREATE POLICY "Users can update own scripts"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'scripts'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+)
+WITH CHECK (
+  bucket_id = 'scripts'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+CREATE POLICY "Users can delete own scripts"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'scripts'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
