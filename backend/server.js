@@ -26,14 +26,33 @@ const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 // Middleware
 app.use(
   cors({
-    origin: frontendUrl, // Frontend URL from environment
+    origin: [
+      frontendUrl,
+      "https://api.robo.smartpi.ai",
+      "https://robo.smartpi.ai",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    maxAge: 86400, // Cache preflight requests for 24 hours
   })
 );
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Configure request size limits and error handling
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ limit: "100mb", extended: true }));
+
+// Add error handler for payload too large
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 413) {
+    return res.status(413).json({
+      error: "Request entity too large",
+      message:
+        "The data payload is too large. Please reduce the size and try again.",
+    });
+  }
+  next(err);
+});
 
 // Routes
 app.use("/api", uploadRoutes);

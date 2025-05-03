@@ -168,7 +168,7 @@ function SceneModal({ scene }: SceneModalProps) {
                               const newShot = {
                                 ...shot,
                                 isGeneratingImage: false,
-                                referenceImage: `data:image/png;base64,${data.imageData}`,
+                                referenceImage: `data:${data.contentType};base64,${data.imageData}`,
                                 revisedPrompt: data.revisedPrompt,
                               };
 
