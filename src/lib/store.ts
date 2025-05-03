@@ -40,7 +40,17 @@ interface AudioData {
 interface WorkflowState {
   scriptFile: {
     fileName: string;
+    filePath: string;
     content: string;
+  } | null;
+  script: string | null;
+  movieSettings: {
+    title: string;
+    genre: string;
+    number_of_scenes: number;
+    length_minutes: number;
+    topic: string;
+    mode: string;
   } | null;
   scenes: Scene[] | null;
   movie: MovieData | null;
@@ -102,7 +112,11 @@ interface Store {
 
   // Workflow State
   workflow: WorkflowState;
-  setScript: (file: { fileName: string; content: string }) => void;
+  setScriptFile: (
+    file: { fileName: string; filePath: string; content: string } | null
+  ) => void;
+  setScript: (script: string | null) => void;
+  setMovieSettings: (settings: WorkflowState["movieSettings"]) => void;
   setScenes: (scenes: Scene[]) => void;
   setMovie: (movie: MovieData | null) => void;
   setAudio: (audio: AudioData | null) => void;
@@ -174,17 +188,33 @@ export const useStore = create<Store>((set, get) => ({
   // Workflow State
   workflow: {
     scriptFile: null,
+    script: null,
+    movieSettings: null,
     scenes: null,
     movie: null,
     audio: null,
     completedSteps: [],
     devMode: false,
   },
-  setScript: (file) =>
+  setScriptFile: (file) =>
     set((state) => ({
       workflow: {
         ...state.workflow,
         scriptFile: file,
+      },
+    })),
+  setScript: (script) =>
+    set((state) => ({
+      workflow: {
+        ...state.workflow,
+        script,
+      },
+    })),
+  setMovieSettings: (settings) =>
+    set((state) => ({
+      workflow: {
+        ...state.workflow,
+        movieSettings: settings,
       },
     })),
   setScenes: (scenes) =>
