@@ -1,0 +1,140 @@
+{
+  "scenes": [
+    {
+      "title": "Brighton Beach Mayhem",
+      "sceneNumber": 1,
+      "location": "Brighton Beach",
+      "timeOfDay": "Day",
+      "characters": [
+        "Kids",
+        "Sunbathers",
+        "Teenagers",
+        "Onlookers",
+        "Great White Shark"
+      ],
+      "description": "A peaceful day at Brighton Beach turns into a nightmare as great white sharks with humanoid legs emerge from the sand and sea, attacking the crowd.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Wide Shot",
+          "movement": "Pan",
+          "composition": "Full view of Brighton Beach with kids, sunbathers and teenagers",
+          "action": "Show Brighton Beach bustling with activities",
+          "effects": "Natural daylight, ocean sounds",
+          "lighting": "Natural",
+          "scriptSegment": "The sun shines brightly above Brighton Beach, a tourist haven. Kids build sandcastles near the shimmering ocean waves; sunbathers lay out on the hot sand. A group of teenagers SPLASH unbidden into the water.",
+          "dialogue": null
+        },
+        {
+          "number": 2,
+          "angle": "Medium Shot",
+          "movement": "Static",
+          "composition": "Focus on sand shifting and rippling",
+          "action": "Show sand shifting and rippling",
+          "effects": "Earthquake-like effect",
+          "lighting": "Natural",
+          "scriptSegment": "Suddenly, the SAND starts to shift and ripple in something akin to an earthquake. Onlookers SCREAM, scattering in all directions.",
+          "dialogue": null
+        },
+        {
+          "number": 3,
+          "angle": "Close Up",
+          "movement": "Static",
+          "composition": "Focus on shark fin piercing through the sandy surface",
+          "action": "Show shark fin piercing through the sand and a great white shark emerging",
+          "effects": "Shark emerging effect",
+          "lighting": "Natural",
+          "scriptSegment": "CLOSE UP on a SHARK FIN piercing through the sandy surface. A terrifyingly evolved GREAT WHITE SHARK emerges. It has humanoid legs, muscular and agile. Its jaws SNAP, unveiling rows of serrated teeth.",
+          "dialogue": null
+        },
+        {
+          "number": 4,
+          "angle": "Wide Shot",
+          "movement": "Pan",
+          "composition": "Full view of beach with mayhem spreading",
+          "action": "Show sharks charging and lunging towards the crowd",
+          "effects": "Mayhem, screams",
+          "lighting": "Natural",
+          "scriptSegment": "The shark charges towards the crowd. It LUNGES, and there's a blood curdling SCREAM. More sharks thrust themselves from the sand. MAYHEM spreads.",
+          "dialogue": {
+            "speaker": "Onlookers",
+            "text": "(CHORUS OF SCREAMS)"
+          }
+        },
+        {
+          "number": 5,
+          "angle": "Medium Shot",
+          "movement": "Static",
+          "composition": "Focus on teenagers in the water",
+          "action": "Show teenagers isolated in the water",
+          "effects": "Confusion, terror",
+          "lighting": "Natural",
+          "scriptSegment": "The group of teenagers, isolated in the water. They see the frenzy on the beach, but they are confused and terrified. One of them points out at the ocean.",
+          "dialogue": null
+        },
+        {
+          "number": 6,
+          "angle": "Wide Shot",
+          "movement": "Pan",
+          "composition": "Full view of the ocean",
+          "action": "Show an army of land sharks pouring out from the sea",
+          "effects": "Surging sharks",
+          "lighting": "Natural",
+          "scriptSegment": "A SURGING ARMY OF LAND SHARKS pour out from the sea, their arrival accenting the absolute horror on shore.",
+          "dialogue": {
+            "speaker": "Teenager",
+            "text": "Look."
+          }
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Crane for high angle shots",
+          "Underwater camera for shark shots",
+          "Steadicam for pan shots"
+        ],
+        "vfx": [
+          "CGI for land sharks",
+          "Ripple and earthquake effect on sand",
+          "Blood effects"
+        ],
+        "practicalEffects": [
+          "Shark props for close-up shots",
+          "Wind and sand machines"
+        ],
+        "props": [
+          "Beach props",
+          "Shark fin"
+        ],
+        "safety": [
+          "Safety measures for crowd scenes",
+          "Water safety for scenes involving water"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Onlookers": "Fear",
+          "Teenagers": "Confusion and terror",
+          "Great White Shark": "Predatory"
+        },
+        "mood": "Terror",
+        "colorPalette": [
+          "Bright colors for initial beach scene",
+          "Dark shades for shark attack"
+        ],
+        "soundCues": [
+          "Beach sounds",
+          "Screams",
+          "Roar of the ocean",
+          "Jaws snapping"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "scriptId": "beach_madness_1746247564635",
+    "createdAt": "2025-05-03T04:47:25.002Z",
+    "sceneCount": 1,
+    "userId": "a11f4c8c-aaea-418a-a433-e9f73848cdc4"
+  }
+}
