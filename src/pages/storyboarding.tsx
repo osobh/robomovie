@@ -32,6 +32,7 @@ interface SceneModalProps {
 
 function SceneModal({ scene }: SceneModalProps) {
   const { workflow } = useStore();
+  const setStoreScenes = useStore((state) => state.setScenes);
   return (
     <DialogContent className="bg-[#1A1A1A] text-white max-w-4xl max-h-[80vh] overflow-y-auto">
       <DialogHeader>
@@ -119,7 +120,7 @@ function SceneModal({ scene }: SceneModalProps) {
                           className="bg-[#1ABC9C] hover:bg-[#1ABC9C]/90 text-white"
                           onClick={async () => {
                             try {
-                              // Update shot state to show loading
+                              // Update shot state to show loading and clear previous image
                               const updatedShots = [...scene.shots];
                               const shotIndex = updatedShots.findIndex(
                                 (s) => s.number === shot.number
@@ -127,16 +128,16 @@ function SceneModal({ scene }: SceneModalProps) {
                               updatedShots[shotIndex] = {
                                 ...shot,
                                 isGeneratingImage: true,
+                                referenceImage: null, // Clear previous image while generating
+                                error: null, // Clear any previous errors
                               };
-                              useStore
-                                .getState()
-                                .setScenes(
-                                  workflow!.scenes!.map((s: Scene) =>
-                                    s.id === scene.id
-                                      ? { ...s, shots: updatedShots }
-                                      : s
-                                  )
-                                );
+                              setStoreScenes(
+                                workflow!.scenes!.map((s: Scene) =>
+                                  s.id === scene.id
+                                    ? { ...s, shots: updatedShots }
+                                    : s
+                                )
+                              );
 
                               // Generate reference image
                               const response = await fetch(
@@ -170,6 +171,7 @@ function SceneModal({ scene }: SceneModalProps) {
                                 isGeneratingImage: false,
                                 referenceImage: `data:${data.contentType};base64,${data.imageData}`,
                                 revisedPrompt: data.revisedPrompt,
+                                error: null,
                               };
 
                               // Create a new array with the updated shot
@@ -183,19 +185,17 @@ function SceneModal({ scene }: SceneModalProps) {
                               };
 
                               // Update scenes in store with a fresh reference
-                              useStore
-                                .getState()
-                                .setScenes(
-                                  workflow!.scenes!.map((s: Scene) =>
-                                    s.id === scene.id ? updatedScene : s
-                                  )
-                                );
+                              setStoreScenes(
+                                workflow!.scenes!.map((s: Scene) =>
+                                  s.id === scene.id ? updatedScene : s
+                                )
+                              );
                             } catch (error) {
                               console.error(
                                 "Error generating reference image:",
                                 error
                               );
-                              // Reset generating state on error
+                              // Reset generating state and set error
                               const updatedShots = [...scene.shots];
                               const shotIndex = updatedShots.findIndex(
                                 (s) => s.number === shot.number
@@ -203,16 +203,19 @@ function SceneModal({ scene }: SceneModalProps) {
                               updatedShots[shotIndex] = {
                                 ...shot,
                                 isGeneratingImage: false,
+                                referenceImage: null,
+                                error:
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Failed to generate image",
                               };
-                              useStore
-                                .getState()
-                                .setScenes(
-                                  workflow!.scenes!.map((s: Scene) =>
-                                    s.id === scene.id
-                                      ? { ...s, shots: updatedShots }
-                                      : s
-                                  )
-                                );
+                              setStoreScenes(
+                                workflow!.scenes!.map((s: Scene) =>
+                                  s.id === scene.id
+                                    ? { ...s, shots: updatedShots }
+                                    : s
+                                )
+                              );
                             }
                           }}
                           disabled={shot.isGeneratingImage}
@@ -258,6 +261,7 @@ function SceneModal({ scene }: SceneModalProps) {
                               </div>
                             </div>
                           )}
+                          {/* Show image when ready */}
                           {!shot.isGeneratingImage && shot.referenceImage && (
                             <img
                               src={shot.referenceImage}
@@ -272,16 +276,30 @@ function SceneModal({ scene }: SceneModalProps) {
                               }}
                             />
                           )}
-                          {!shot.isGeneratingImage && !shot.referenceImage && (
-                            <div className="absolute inset-0 flex items-center justify-center">
+                          {/* Show error state */}
+                          {!shot.isGeneratingImage && shot.error && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-red-500/10">
                               <div className="text-center space-y-2">
-                                <ImageIcon className="w-12 h-12 text-gray-600 mx-auto" />
-                                <p className="text-sm text-gray-400">
-                                  Click generate to create reference image
+                                <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
+                                <p className="text-sm text-red-500">
+                                  {shot.error}
                                 </p>
                               </div>
                             </div>
                           )}
+                          {/* Show initial state */}
+                          {!shot.isGeneratingImage &&
+                            !shot.referenceImage &&
+                            !shot.error && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-center space-y-2">
+                                  <ImageIcon className="w-12 h-12 text-gray-600 mx-auto" />
+                                  <p className="text-sm text-gray-400">
+                                    Click generate to create reference image
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -401,8 +419,10 @@ export function Storyboarding() {
   const { completeStep } = useWorkflow();
   const { workflow } = useStore();
   const { user } = useAuth();
-  const [scenes, setScenes] = useState<Scene[]>([]);
-  const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
+  const [scenes, setLocalScenes] = useState<Scene[]>([]);
+  const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+  const setStoreScenes = useStore((state) => state.setScenes);
+  const selectedScene = scenes.find((s) => s.id === selectedSceneId) || null;
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -471,7 +491,7 @@ export function Storyboarding() {
   // Load scenes from workflow if available
   useEffect(() => {
     if (workflow.scenes) {
-      setScenes(workflow.scenes);
+      setLocalScenes(workflow.scenes);
     }
   }, [workflow.scenes]);
 
@@ -525,8 +545,8 @@ export function Storyboarding() {
 
       // Update scenes in store and local state
       console.log("Setting scenes:", scenesWithIds);
-      setScenes(scenesWithIds);
-      useStore.getState().setScenes(scenesWithIds);
+      setLocalScenes(scenesWithIds);
+      setStoreScenes(scenesWithIds);
 
       // Complete the storyboard step
       completeStep("scene");
@@ -606,8 +626,8 @@ export function Storyboarding() {
                             })
                           );
                           console.log("Setting scenes:", scenesWithIds);
-                          setScenes(scenesWithIds);
-                          useStore.getState().setScenes(scenesWithIds);
+                          setLocalScenes(scenesWithIds);
+                          setStoreScenes(scenesWithIds);
                           // Complete the storyboard step
                           completeStep("scene");
                           setSuccessMessage("Storyboard loaded successfully!");
@@ -699,7 +719,7 @@ export function Storyboarding() {
             <div
               key={scene.sceneNumber}
               className="aspect-video bg-[#1A1A1A] rounded-lg p-4 flex flex-col cursor-pointer hover:bg-[#2A2A2A] transition-colors"
-              onClick={() => setSelectedScene(scene)}
+              onClick={() => setSelectedSceneId(scene.id)}
             >
               <div className="flex-1 flex flex-col items-center justify-center">
                 <ImageIcon className="w-12 h-12 text-[#1ABC9C] mb-2" />
@@ -779,11 +799,12 @@ export function Storyboarding() {
       </div>
 
       {/* Scene Details Modal */}
-      {selectedScene && (
-        <Dialog open={true} onOpenChange={() => setSelectedScene(null)}>
-          <SceneModal scene={selectedScene} />
-        </Dialog>
-      )}
+      <Dialog
+        open={!!selectedScene}
+        onOpenChange={() => setSelectedSceneId(null)}
+      >
+        {selectedScene && <SceneModal scene={selectedScene} />}
+      </Dialog>
     </div>
   );
 }

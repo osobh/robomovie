@@ -81,6 +81,7 @@ export interface Scene {
     error?: string | null;
     referenceImage?: string | null;
     revisedPrompt?: string | null;
+    // Add any additional shot properties here
   }[];
   technicalRequirements: {
     equipment: string[];
