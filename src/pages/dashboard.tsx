@@ -1,88 +1,127 @@
-import { useState, useEffect } from 'react';
-import { FileText, Film, Layout, Clock, AlertCircle } from 'lucide-react';
-import { useServerStatus } from '@/lib/hooks/use-server-status';
-import { useAuth } from '@/lib/auth';
-import { UploadCard } from '@/components/upload-card';
-import { GenerateScriptCard } from '@/components/generate-script-card';
+import { useState, useEffect } from "react";
+import { FileText, Film, Layout, AlertCircle } from "lucide-react";
+import { useServerStatus } from "@/lib/hooks/use-server-status";
+import { useAuth } from "@/lib/auth";
+import { UploadCard } from "@/components/upload-card";
+import { GenerateScriptCard } from "@/components/generate-script-card";
+import { QuickAccessButtons } from "@/components/quick-access-buttons";
+import { StatusCard } from "@/components/status-card";
+import { ActivityTimeline } from "@/components/activity-timeline";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-interface Stats {
-  totalScripts: number;
-  completedMovies: number;
-  storyboardCount: number;
-  processingTime: number;
+interface DetailedStats {
+  scripts: {
+    total: number;
+    new: number;
+    completed: number;
+  };
+  storyboards: {
+    total: number;
+    inProgress: number;
+    completed: number;
+  };
+  videoGeneration: {
+    total: number;
+    rendering: number;
+    completed: number;
+  };
 }
 
-
-
-function StatCard({ icon: Icon, label, value, color }: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: number | string;
-  color: string;
-}) {
-  return (
-    <div className={`bg-[#1A1A1A] rounded-lg p-6 border-l-4 ${color}`}>
-      <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-lg ${color.replace('border', 'bg')}/10`}>
-          <Icon className={`w-6 h-6 ${color.replace('border', 'text')}`} />
-        </div>
-        <div>
-          <p className="text-sm text-gray-400">{label}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
+interface Activity {
+  id: string;
+  type:
+    | "script-upload"
+    | "storyboard-complete"
+    | "video-rendering"
+    | "video-complete";
+  title: string;
+  timestamp: string;
+  status?: string;
+  metadata?: {
+    fileSize?: string;
+    duration?: string;
+    progress?: number;
+    error?: string;
+  };
 }
 
 export function Dashboard() {
   const { user } = useAuth();
   const isServerRunning = useServerStatus();
-  const [stats, setStats] = useState<Stats>({
-    totalScripts: 0,
-    completedMovies: 0,
-    storyboardCount: 0,
-    processingTime: 0
+  const [stats, setStats] = useState<DetailedStats>({
+    scripts: {
+      total: 0,
+      new: 0,
+      completed: 0,
+    },
+    storyboards: {
+      total: 0,
+      inProgress: 0,
+      completed: 0,
+    },
+    videoGeneration: {
+      total: 0,
+      rendering: 0,
+      completed: 0,
+    },
   });
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchActivities = async () => {
+    if (!isServerRunning || !user) return;
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/dashboard/recent-activity/${user.id}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch recent activities");
+      }
+      const data = await response.json();
+      setActivities(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching activities:", err);
+      setError("Failed to load recent activities");
+    } finally {
+      setIsLoadingActivities(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     if (!isServerRunning || !user) return;
 
     try {
-      // Get user stats from API
-      const statsResponse = await fetch(`${API_URL}/api/user-stats/${user.id}`);
+      const statsResponse = await fetch(
+        `${API_URL}/api/dashboard/stats/${user.id}`
+      );
       if (!statsResponse.ok) {
-        throw new Error('Failed to fetch user stats');
+        throw new Error("Failed to fetch dashboard stats");
       }
-      const userStats = await statsResponse.json();
-
-      setStats(prev => ({
-        ...prev,
-        totalScripts: userStats.scriptCount || 0,
-        completedMovies: userStats.movieCount || 0,
-        storyboardCount: userStats.storyboardCount || 0
-      }));
+      const dashboardStats = await statsResponse.json();
+      setStats(dashboardStats);
       setError(null);
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data');
+      console.error("Error fetching dashboard data:", err);
+      setError("Failed to load dashboard data");
     }
   };
 
   useEffect(() => {
     fetchDashboardData();
+    fetchActivities();
   }, [isServerRunning, user]);
-
-
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div>
         <h1 className="text-4xl font-bold text-[#FFA500]">Dashboard</h1>
-        <p className="text-lg text-gray-300 mt-2">Overview of your movie creation progress</p>
+        <p className="text-lg text-gray-300 mt-2">
+          Overview of your movie creation progress
+        </p>
       </div>
 
       {!isServerRunning && (
@@ -99,43 +138,39 @@ export function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
+      <QuickAccessButtons />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatusCard
+          title="Scripts"
+          stats={stats.scripts}
           icon={FileText}
-          label="Total Scripts"
-          value={stats.totalScripts}
           color="border-[#1ABC9C]"
         />
-        <StatCard
-          icon={Film}
-          label="Completed Movies"
-          value={stats.completedMovies}
-          color="border-[#FFA500]"
-        />
-        <StatCard
+        <StatusCard
+          title="Storyboards"
+          stats={stats.storyboards}
           icon={Layout}
-          label="Total Storyboards"
-          value={stats.storyboardCount}
           color="border-purple-500"
         />
-        <StatCard
-          icon={Clock}
-          label="Processing Time"
-          value={`${stats.processingTime} hrs`}
-          color="border-blue-500"
+        <StatusCard
+          title="Video Generation"
+          stats={stats.videoGeneration}
+          icon={Film}
+          color="border-[#FFA500]"
         />
       </div>
 
-      <div className="bg-[#1A1A1A] rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Activity Timeline</h2>
-        <p className="text-gray-400">No recent activity</p>
-      </div>
+      <ActivityTimeline
+        activities={activities}
+        isLoading={isLoadingActivities}
+      />
 
       {/* Script Management Cards */}
       <div className="space-y-6">
-        <UploadCard 
+        <UploadCard
           onUploadComplete={(files) => {
-            console.log('Files uploaded successfully:', files);
+            console.log("Files uploaded successfully:", files);
             fetchDashboardData();
           }}
         />

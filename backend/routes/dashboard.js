@@ -1,126 +1,125 @@
-import { Router } from 'express';
-import { join } from 'path';
-import fs from 'fs/promises';
+import { Router } from "express";
+import { supabase } from "../lib/supabase.js";
+
+// Helper function to format bytes
+export function formatBytes(bytes) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// Helper function to add activity
+export async function addActivity(
+  userId,
+  type,
+  title,
+  status = null,
+  metadata = {}
+) {
+  const { data, error } = await supabase
+    .from("activities")
+    .insert({
+      user_id: userId,
+      type,
+      title,
+      status,
+      metadata,
+      timestamp: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error adding activity:", error);
+    return null;
+  }
+
+  return data;
+}
 
 const router = Router();
 
-// Helper function to get directory size
-async function getDirectorySize(dirPath) {
+// Get recent activities
+router.get("/recent-activity/:userId", async (req, res) => {
   try {
-    const files = await fs.readdir(dirPath);
-    const stats = await Promise.all(
-      files.map(file => fs.stat(join(dirPath, file)))
-    );
-    return stats.reduce((acc, { size }) => acc + size, 0);
+    const { data: activities, error } = await supabase
+      .from("activities")
+      .select("*")
+      .eq("user_id", req.params.userId)
+      .order("timestamp", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    res.json(activities);
   } catch (error) {
-    console.error('Error calculating directory size:', error);
-    return 0;
-  }
-}
-
-// Helper function to format bytes
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Get dashboard statistics
-router.get('/stats', async (req, res) => {
-  try {
-    const uploadsDir = join(__dirname, '..', 'uploads');
-    const moviesDir = join(__dirname, '..', 'movies');
-    const audioDir = join(__dirname, '..', 'audio');
-
-    // Ensure directories exist
-    await Promise.all([
-      fs.mkdir(uploadsDir, { recursive: true }),
-      fs.mkdir(moviesDir, { recursive: true }),
-      fs.mkdir(audioDir, { recursive: true })
-    ]);
-
-    // Get file counts and sizes
-    const [scripts, movies, audioFiles] = await Promise.all([
-      fs.readdir(uploadsDir),
-      fs.readdir(moviesDir),
-      fs.readdir(audioDir)
-    ]);
-
-    // Calculate total audio duration (mock calculation - 3 minutes per audio file)
-    const audioMinutes = audioFiles.length * 3;
-
-    // Mock processing time (10 minutes per movie)
-    const processingTime = movies.length * 10 / 60;
-
-    res.json({
-      totalScripts: scripts.length,
-      completedMovies: movies.length,
-      audioMinutes,
-      processingTime: Math.round(processingTime * 100) / 100
-    });
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard statistics' });
+    console.error("Error fetching recent activities:", error);
+    res.status(500).json({ error: "Failed to fetch recent activities" });
   }
 });
 
-// Get recent files
-router.get('/files', async (req, res) => {
+// Get dashboard statistics
+router.get("/stats/:userId", async (req, res) => {
   try {
-    const uploadsDir = join(__dirname, '..', 'uploads');
-    const moviesDir = join(__dirname, '..', 'movies');
+    const userId = req.params.userId;
 
-    // Ensure directories exist
-    await Promise.all([
-      fs.mkdir(uploadsDir, { recursive: true }),
-      fs.mkdir(moviesDir, { recursive: true })
-    ]);
+    // Get scripts stats
+    const { data: scripts, error: scriptsError } = await supabase
+      .from("scripts")
+      .select("id, created_at")
+      .eq("user_id", userId);
 
-    // Get all files from both directories
-    const [scriptFiles, movieFiles] = await Promise.all([
-      fs.readdir(uploadsDir),
-      fs.readdir(moviesDir)
-    ]);
+    if (scriptsError) throw scriptsError;
 
-    // Process script files
-    const scripts = await Promise.all(
-      scriptFiles.map(async (filename) => {
-        const stats = await fs.stat(join(uploadsDir, filename));
-        return {
-          id: filename.split('-')[0],
-          name: filename.split('-').slice(1).join('-'),
-          type: 'script',
-          createdAt: stats.birthtime,
-          size: formatBytes(stats.size)
-        };
-      })
-    );
+    // Get movies stats
+    const { data: movies, error: moviesError } = await supabase
+      .from("movies")
+      .select("id, status")
+      .eq("user_id", userId);
 
-    // Process movie files
-    const movies = await Promise.all(
-      movieFiles.map(async (filename) => {
-        const stats = await fs.stat(join(moviesDir, filename));
-        return {
-          id: filename.split('-')[0],
-          name: filename.split('-').slice(1).join('-'),
-          type: 'movie',
-          createdAt: stats.birthtime,
-          size: formatBytes(stats.size)
-        };
-      })
-    );
+    if (moviesError) throw moviesError;
 
-    // Combine and sort by creation date
-    const allFiles = [...scripts, ...movies].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    // Get scenes (storyboards) stats
+    const { data: scenes, error: scenesError } = await supabase
+      .from("scenes")
+      .select("id, script_id, completed")
+      .in("script_id", scripts?.map((s) => s.id) || []);
 
-    res.json(allFiles);
+    if (scenesError) throw scenesError;
+
+    // Calculate stats
+    const scriptStats = {
+      total: scripts?.length || 0,
+      new:
+        scripts?.filter(
+          (s) =>
+            new Date(s.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000)
+        ).length || 0,
+      completed: scripts?.length || 0,
+    };
+
+    const storyboardStats = {
+      total: scenes?.length || 0,
+      inProgress: scenes?.filter((s) => !s.completed)?.length || 0,
+      completed: scenes?.filter((s) => s.completed)?.length || 0,
+    };
+
+    const videoStats = {
+      total: movies?.length || 0,
+      rendering: movies?.filter((m) => m.status === "processing")?.length || 0,
+      completed: movies?.filter((m) => m.status === "completed")?.length || 0,
+    };
+
+    res.json({
+      scripts: scriptStats,
+      storyboards: storyboardStats,
+      videoGeneration: videoStats,
+    });
   } catch (error) {
-    console.error('Error fetching files:', error);
-    res.status(500).json({ error: 'Failed to fetch files' });
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard statistics" });
   }
 });
 
