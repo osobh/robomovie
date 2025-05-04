@@ -28,15 +28,20 @@ app.use(
   cors({
     origin: [
       frontendUrl,
-      "https://api.robo.smartpi.ai",
-      "https://robo.smartpi.ai",
-    ],
+      process.env.NODE_ENV === "development" ? "http://localhost:5173" : false,
+    ].filter(Boolean),
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     maxAge: 86400, // Cache preflight requests for 24 hours
   })
 );
+
+// Add request logging for debugging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 // Configure request size limits and error handling
 app.use(express.json({ limit: "100mb" }));

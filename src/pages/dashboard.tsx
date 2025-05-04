@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileText, Film, Layout, AlertCircle } from "lucide-react";
 import { useServerStatus } from "@/lib/hooks/use-server-status";
 import { useAuth } from "@/lib/auth";
@@ -70,7 +70,7 @@ export function Dashboard() {
   const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     if (!isServerRunning || !user) return;
 
     try {
@@ -89,9 +89,9 @@ export function Dashboard() {
     } finally {
       setIsLoadingActivities(false);
     }
-  };
+  }, [isServerRunning, user, setActivities, setError, setIsLoadingActivities]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!isServerRunning || !user) return;
 
     try {
@@ -108,12 +108,12 @@ export function Dashboard() {
       console.error("Error fetching dashboard data:", err);
       setError("Failed to load dashboard data");
     }
-  };
+  }, [isServerRunning, user, setStats, setError]);
 
   useEffect(() => {
     fetchDashboardData();
     fetchActivities();
-  }, [isServerRunning, user]);
+  }, [fetchDashboardData, fetchActivities]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
