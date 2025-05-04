@@ -4,6 +4,7 @@ import cors from "cors";
 import { fileURLToPath } from "url";
 import path, { dirname, join } from "path";
 import fs from "fs/promises";
+import { v4 as uuidv4 } from "uuid";
 import { auth } from "../middleware/auth.js";
 import { addActivity } from "./dashboard.js";
 import { processWithGPT4Vision } from "../services/vision.js";
@@ -44,14 +45,20 @@ const storage = multer.diskStorage({
 
       cb(null, destDir);
     } catch (error) {
-      cb(error, null);
+      console.error("Error creating directories:", error);
+      cb(
+        new Error(`Failed to create upload directories: ${error.message}`),
+        null
+      );
     }
   },
   filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const uuid = uuidv4().slice(0, 8); // Short UUID
     const sanitizedName = file.originalname
       .replace(/[^a-z0-9.]/gi, "_")
       .toLowerCase();
-    cb(null, sanitizedName);
+    cb(null, `${timestamp}-${uuid}-${sanitizedName}`);
   },
 });
 
@@ -108,7 +115,7 @@ router.post(
         return res.status(401).json({ error: "User not authenticated" });
       }
 
-      const jobId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const jobId = `${Date.now()}-${uuidv4().slice(0, 8)}`;
       const uploadPath = req.file.path;
       const baseDir = path.dirname(path.dirname(uploadPath));
       const extractedTextPath = path.join(
@@ -120,9 +127,13 @@ router.post(
       // Initialize job status
       processingJobs.set(jobId, {
         status: "uploading",
+        stage: "File received",
         progress: 0,
         error: null,
         textPath: null,
+        details: "Starting file processing",
+        fileName: req.file.originalname,
+        fileType: req.file.mimetype,
       });
 
       // Start processing in background with progress updates
@@ -136,6 +147,8 @@ router.post(
           processingJobs.set(jobId, {
             ...progress,
             textPath: extractedTextPath,
+            fileName: req.file.originalname,
+            fileType: req.file.mimetype,
           });
         }
       );
@@ -169,9 +182,13 @@ async function processFile(jobId, filePath, extractedTextPath, userId, file) {
     // Update status to processing
     processingJobs.set(jobId, {
       status: "processing",
+      stage: "Initializing",
       progress: 10,
       error: null,
       textPath: null,
+      details: "Starting file processing",
+      fileName: file.originalname,
+      fileType: file.mimetype,
     });
 
     // Get base directory (two levels up from filePath)
@@ -187,6 +204,8 @@ async function processFile(jobId, filePath, extractedTextPath, userId, file) {
           ...progress,
           error: null,
           textPath: null,
+          fileName: file.originalname,
+          fileType: file.mimetype,
         });
       }
     );
@@ -203,17 +222,31 @@ async function processFile(jobId, filePath, extractedTextPath, userId, file) {
     // Update status to complete
     processingJobs.set(jobId, {
       status: "complete",
+      stage: "Completed",
       progress: 100,
       error: null,
       textPath: extractedTextPath,
+      details: "Processing completed successfully",
+      fileName: file.originalname,
+      fileType: file.mimetype,
     });
   } catch (error) {
-    console.error("Error processing file:", error);
+    console.error("Error processing file:", {
+      error: error.message,
+      jobId,
+      fileName: file.originalname,
+      userId,
+    });
+
     processingJobs.set(jobId, {
       status: "error",
+      stage: "Failed",
       progress: 0,
       error: error.message,
       textPath: null,
+      details: `Processing failed: ${error.message}`,
+      fileName: file.originalname,
+      fileType: file.mimetype,
     });
   }
 }
