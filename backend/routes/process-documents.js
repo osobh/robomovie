@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import cors from "cors";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import path, { dirname, join } from "path";
 import fs from "fs/promises";
 import { auth } from "../middleware/auth.js";
 import { addActivity } from "./dashboard.js";
@@ -21,23 +21,28 @@ const storage = multer.diskStorage({
       }
 
       const timestamp = Date.now();
-      const uploadDir = join(
+      const baseDir = join(
         __dirname,
         "..",
         "storage",
         "uploads",
         userId,
-        timestamp.toString(),
-        "original"
+        timestamp.toString()
       );
 
-      // Create directories if they don't exist
-      await fs.mkdir(uploadDir, { recursive: true });
-      await fs.mkdir(uploadDir.replace("/original", "/extracted_text"), {
-        recursive: true,
-      });
+      // Create all required directories
+      await fs.mkdir(join(baseDir, "original"), { recursive: true });
+      await fs.mkdir(join(baseDir, "extracted_text"), { recursive: true });
+      await fs.mkdir(join(baseDir, "pages"), { recursive: true });
+      await fs.mkdir(join(baseDir, "images"), { recursive: true });
 
-      cb(null, uploadDir);
+      // Store in original or images based on file type
+      const destDir =
+        file.mimetype === "application/pdf"
+          ? join(baseDir, "original")
+          : join(baseDir, "images");
+
+      cb(null, destDir);
     } catch (error) {
       cb(error, null);
     }
@@ -105,9 +110,12 @@ router.post(
 
       const jobId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const uploadPath = req.file.path;
-      const extractedTextPath = uploadPath
-        .replace("/original/", "/extracted_text/")
-        .replace(/\.[^/.]+$/, ".txt");
+      const baseDir = path.dirname(path.dirname(uploadPath));
+      const extractedTextPath = path.join(
+        baseDir,
+        "extracted_text",
+        path.basename(uploadPath).replace(/\.[^/.]+$/, ".txt")
+      );
 
       // Initialize job status
       processingJobs.set(jobId, {
@@ -166,15 +174,22 @@ async function processFile(jobId, filePath, extractedTextPath, userId, file) {
       textPath: null,
     });
 
+    // Get base directory (two levels up from filePath)
+    const baseDir = path.dirname(path.dirname(filePath));
+
     // Process with GPT-4 Vision and track progress
-    const extractedText = await processWithGPT4Vision(filePath, (progress) => {
-      processingJobs.set(jobId, {
-        status: "processing",
-        ...progress,
-        error: null,
-        textPath: null,
-      });
-    });
+    const extractedText = await processWithGPT4Vision(
+      filePath,
+      baseDir,
+      (progress) => {
+        processingJobs.set(jobId, {
+          status: "processing",
+          ...progress,
+          error: null,
+          textPath: null,
+        });
+      }
+    );
 
     // Save extracted text
     await fs.writeFile(extractedTextPath, extractedText);
