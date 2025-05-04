@@ -1,9 +1,12 @@
+import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GenerateScript } from "./generate-script";
 import { BulkUploadTab } from "@/components/script-management/bulk-upload-tab";
 import { ScriptEditorTab } from "@/components/script-management/script-editor-tab";
 
 export function ScriptManagement() {
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "generate";
   return (
     <div className="max-w-7xl mx-auto">
       <h1 className="text-4xl font-bold mb-6 text-[#FFA500]">
@@ -13,7 +16,7 @@ export function ScriptManagement() {
         Create, upload, and edit your scripts.
       </p>
 
-      <Tabs defaultValue="generate" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList className="bg-[#1A1A1A] border border-[#2A2A2A]">
           <TabsTrigger
             value="generate"

@@ -5,6 +5,7 @@ import { initializeStorage } from "./services/storage.js";
 
 // Import routes
 import uploadRoutes from "./routes/upload.js";
+import processDocumentsRoutes from "./routes/process-documents.js";
 import generateScriptRoutes from "./routes/generate-script.js";
 import storyboardingRoutes from "./routes/storyboarding.js";
 import referenceImageRoutes from "./routes/reference-image.js";
@@ -20,22 +21,50 @@ dotenv.config({ path: "../.env" });
 
 const app = express();
 const port = process.env.PORT || 3000;
-const host = process.env.HOST || "localhost";
+const host = process.env.HOST || "0.0.0.0";
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // Middleware
 app.use(
   cors({
-    origin: [
-      frontendUrl,
-      process.env.NODE_ENV === "development" ? "http://localhost:5173" : false,
-    ].filter(Boolean),
+    origin: [frontendUrl, "https://robo.smartpi.ai", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    maxAge: 86400, // Cache preflight requests for 24 hours
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400,
   })
 );
+
+app.use(express.json({ limit: "500mb" }));
+app.use(express.urlencoded({ limit: "500mb", extended: true }));
+
+// Multer payload error middleware
+app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({ error: "File too large." });
+    }
+  }
+  next(err);
+});
+
+// Generic payload too large error
+app.use((err, req, res, next) => {
+  if (err.status === 413) {
+    return res.status(413).json({
+      error: "Request entity too large",
+      message: "Payload too large, please reduce and retry.",
+    });
+  }
+  next(err);
+});
 
 // Add request logging for debugging
 app.use((req, res, next) => {
@@ -44,8 +73,8 @@ app.use((req, res, next) => {
 });
 
 // Configure request size limits and error handling
-app.use(express.json({ limit: "100mb" }));
-app.use(express.urlencoded({ limit: "100mb", extended: true }));
+app.use(express.json({ limit: "500mb" }));
+app.use(express.urlencoded({ limit: "500mb", extended: true }));
 
 // Add error handler for payload too large
 app.use((err, req, res, next) => {
@@ -61,6 +90,7 @@ app.use((err, req, res, next) => {
 
 // Routes
 app.use("/api", uploadRoutes);
+app.use("/api", processDocumentsRoutes);
 app.use("/api", generateScriptRoutes);
 app.use("/api", storyboardingRoutes);
 app.use("/api", referenceImageRoutes);

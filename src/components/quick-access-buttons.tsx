@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Plus, Upload, Layout } from "lucide-react";
+import { Plus, Upload, FileText } from "lucide-react";
 
 interface QuickAccessButton {
   label: string;
@@ -8,34 +8,26 @@ interface QuickAccessButton {
   color: string;
 }
 
-interface QuickAccessButtonsProps {
-  fileInputRef: React.RefObject<HTMLInputElement>;
-}
-
-export function QuickAccessButtons({ fileInputRef }: QuickAccessButtonsProps) {
+export function QuickAccessButtons() {
   const navigate = useNavigate();
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
 
   const buttons: QuickAccessButton[] = [
     {
       label: "New Script",
       icon: Plus,
-      action: () => navigate("/script"),
+      action: () => navigate("/script-management?tab=generate"),
       color: "bg-green-500/10 text-green-500 hover:bg-green-500/20",
     },
     {
       label: "Upload Script",
       icon: Upload,
-      action: handleUploadClick,
+      action: () => navigate("/script-management?tab=upload"),
       color: "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
     },
     {
-      label: "Go to Storyboards",
-      icon: Layout,
-      action: () => navigate("/storyboard"),
+      label: "Go to Script Management",
+      icon: FileText,
+      action: () => navigate("/script-management"),
       color: "bg-purple-500/10 text-purple-500 hover:bg-purple-500/20",
     },
   ];

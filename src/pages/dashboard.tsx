@@ -1,9 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileText, Film, Layout, AlertCircle } from "lucide-react";
 import { useServerStatus } from "@/lib/hooks/use-server-status";
 import { useAuth } from "@/lib/auth";
-import { UploadCard } from "@/components/upload-card";
-import { GenerateScriptCard } from "@/components/generate-script-card";
 import { QuickAccessButtons } from "@/components/quick-access-buttons";
 import { StatusCard } from "@/components/status-card";
 import { ActivityTimeline } from "@/components/activity-timeline";
@@ -49,7 +47,6 @@ interface Activity {
 export function Dashboard() {
   const { user } = useAuth();
   const isServerRunning = useServerStatus();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [stats, setStats] = useState<DetailedStats>({
     scripts: {
       total: 0,
@@ -139,7 +136,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <QuickAccessButtons fileInputRef={fileInputRef} />
+      <QuickAccessButtons />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatusCard
@@ -166,18 +163,6 @@ export function Dashboard() {
         activities={activities}
         isLoading={isLoadingActivities}
       />
-
-      {/* Script Management Cards */}
-      <div className="space-y-6">
-        <UploadCard
-          fileInputRef={fileInputRef}
-          onUploadComplete={(files) => {
-            console.log("Files uploaded successfully:", files);
-            fetchDashboardData();
-          }}
-        />
-        <GenerateScriptCard />
-      </div>
     </div>
   );
 }
