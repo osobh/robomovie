@@ -170,7 +170,7 @@ export function GenerateScript() {
 
     // Navigate to storyboard
     completeStep("script");
-    navigate("/storyboard");
+    navigate("/storyboard", { replace: true });
   };
 
   const handleClearScript = () => {
@@ -384,12 +384,7 @@ export function GenerateScript() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-6 text-[#FFA500]">
-        Script Generation
-      </h1>
-      <p className="text-lg mb-8 text-gray-300">Generate your script.</p>
-
+    <div>
       {/* Movie Settings Form */}
       <form
         onSubmit={handleGenerateScript}

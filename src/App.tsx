@@ -4,7 +4,7 @@ import { WorkflowProvider } from "@/lib/workflow";
 import { Home } from "@/pages/home";
 import { Dashboard } from "@/pages/dashboard";
 import { Settings } from "@/pages/settings";
-import { GenerateScript } from "@/pages/generate-script";
+import { ScriptManagement } from "@/pages/script-management";
 import { Storyboarding } from "@/pages/storyboarding";
 import { MovieEditing } from "@/pages/movie-editing";
 import { Theatre } from "@/pages/theatre";
@@ -18,7 +18,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/script" element={<GenerateScript />} />
+            <Route path="/script-management/*" element={<ScriptManagement />} />
             <Route path="/storyboard" element={<Storyboarding />} />
             <Route path="/movie" element={<MovieEditing />} />
             <Route path="/theatre" element={<Theatre />} />

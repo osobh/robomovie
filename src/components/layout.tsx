@@ -73,10 +73,10 @@ export function Layout({ children }: LayoutProps) {
         />
 
         <NavItem
-          to="/script"
+          to="/script-management"
           icon={<FileText className="w-5 h-5" />}
-          label="Generate Script"
-          active={location.pathname === "/script"}
+          label="Script Management"
+          active={location.pathname.startsWith("/script-management")}
         />
 
         <NavItem
