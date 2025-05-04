@@ -1,0 +1,136 @@
+{
+  "scenes": [
+    {
+      "title": "Everest Ascent",
+      "sceneNumber": 1,
+      "location": "Mount Everest",
+      "timeOfDay": "Day",
+      "characters": [
+        "Ryan"
+      ],
+      "description": "Aged surfer turned hiker, Ryan embarks on a climb of Mount Everest, sharing reflections about his past and his journey.",
+      "shots": [
+        {
+          "number": 1,
+          "angle": "Panoramic",
+          "movement": "Panning",
+          "composition": "Wide Shot",
+          "action": "Reveal Mount Everest",
+          "effects": "Natural lighting, panoramic view, CG for realistic mountain scene",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "Camera pans across the breathtaking mountain, colossal, steep face adorned with ice and snow.",
+          "dialogue": null
+        },
+        {
+          "number": 2,
+          "angle": "Medium Shot",
+          "movement": "Zoom",
+          "composition": "Mid-shot",
+          "action": "Introduce Ryan, show him preparing for the climb",
+          "effects": "Natural lighting, CG for realistic mountain scene",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "Eventually, it zooms to reveal an aged surfer turned hiker, RYAN. He is burdened with a heavy backpack but his eyes are fierce, determined.",
+          "dialogue": {
+            "speaker": "RYAN",
+            "text": "All my life, waves were my Everest. Living, breathing giants forcing me to adapt, to navigate..."
+          }
+        },
+        {
+          "number": 3,
+          "angle": "Low Angle Shot",
+          "movement": "Follow",
+          "composition": "Long Shot",
+          "action": "Ryan begins his climb, footprints left behind",
+          "effects": "Natural lighting, CG for realistic mountain scene",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "Ryan begins his slow, steady ascent, footprints trailing behind in the snow.",
+          "dialogue": {
+            "speaker": "RYAN",
+            "text": "My father was an avid surfer. His last gift was a surfboard. As a child, I was petrified by the ocean... Its vastness. Its unpredictability."
+          }
+        },
+        {
+          "number": 4,
+          "angle": "Close-up",
+          "movement": "Static",
+          "composition": "Close Up",
+          "action": "Show Ryan's struggle against the wind",
+          "effects": "Natural lighting, CG for realistic mountain scene, wind machine",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "A sudden gust of wind almost throws him off balance.",
+          "dialogue": {
+            "speaker": "RYAN",
+            "text": "I remember... plunging head first into those terrifying waves. Each crash felt like the end… but eventually, every fall, every failure… taught me to appreciate the surf’s ebb and flow…"
+          }
+        },
+        {
+          "number": 5,
+          "angle": "Wide Angle",
+          "movement": "Static",
+          "composition": "Full Shot",
+          "action": "Show the steepness of the climb and Ryan's struggle",
+          "effects": "Natural lighting, CG for realistic mountain scene",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "Now, the ascent grows steeper. Ryan struggles, gasping for air. He stops, looking around at the majestic spectacle, a far cry from his ocean.",
+          "dialogue": {
+            "speaker": "RYAN",
+            "text": "Ocean, mountains... from one Everest to another, it's all about facing the fear, walking the treks life has chosen for us..."
+          }
+        },
+        {
+          "number": 6,
+          "angle": "Medium Close-up",
+          "movement": "Follow",
+          "composition": "Mid Close-up",
+          "action": "Capture Ryan's determination despite the harsh conditions",
+          "effects": "Natural lighting, CG for realistic mountain scene",
+          "lighting": "Daylight, bright",
+          "scriptSegment": "As he pushes forth, the unforgiving chill bites into his skin but he wears an unbeatable grin. This is his journey. His chronicle.",
+          "dialogue": null
+        }
+      ],
+      "technicalRequirements": {
+        "equipment": [
+          "Camera",
+          "Wind machine"
+        ],
+        "vfx": [
+          "CG for realistic mountain scene"
+        ],
+        "practicalEffects": [
+          "Wind machine"
+        ],
+        "props": [
+          "Backpack",
+          "Climbing Gear"
+        ],
+        "safety": [
+          "Safety Harnesses",
+          "Stunt Coordinator"
+        ]
+      },
+      "emotionalContext": {
+        "characterEmotions": {
+          "Ryan": "Determined, Resilient, Nostalgic"
+        },
+        "mood": "Inspirational, Reflective",
+        "colorPalette": [
+          "Blue",
+          "White",
+          "Grey"
+        ],
+        "soundCues": [
+          "Wind blowing",
+          "Footsteps in the snow",
+          "Heavy breathing"
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "scriptId": "long_walks_1746321006397",
+    "createdAt": "2025-05-04T01:10:47.870Z",
+    "sceneCount": 1,
+    "userId": "a11f4c8c-aaea-418a-a433-e9f73848cdc4"
+  }
+}
