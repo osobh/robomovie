@@ -1,138 +1,100 @@
 import OpenAI from "openai";
-import { createReadStream } from "fs";
-import { PDFDocument } from "pdf-lib";
 import fs from "fs/promises";
+import { fromPath } from "pdf2pic";
 import sharp from "sharp";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/**
- * Process a file with GPT-4 Vision API
- * @param {string} filePath Path to the file to process
- * @returns {Promise<string>} Extracted text from the file
- */
 export async function processWithGPT4Vision(filePath) {
-  try {
-    const mimeType = await getMimeType(filePath);
+  const mimeType = await getMimeType(filePath);
 
-    if (mimeType === "application/pdf") {
-      return await processPDF(filePath);
-    } else if (mimeType.startsWith("image/")) {
-      return await processImage(filePath);
-    } else {
-      throw new Error("Unsupported file type");
-    }
-  } catch (error) {
-    console.error("Error in processWithGPT4Vision:", error);
-    throw error;
+  if (mimeType === "application/pdf") {
+    return await processPDF(filePath);
+  } else if (mimeType.startsWith("image/")) {
+    return await processImage(filePath);
+  } else {
+    throw new Error("Unsupported file type");
   }
 }
 
-/**
- * Process a PDF file by extracting images from each page
- * @param {string} filePath Path to the PDF file
- * @returns {Promise<string>} Combined extracted text from all pages
- */
+async function getMimeType(filePath) {
+  const header = await fs.readFile(filePath, { length: 4 });
+  const hex = header.toString("hex");
+  if (hex.startsWith("25504446")) return "application/pdf";
+  const meta = await sharp(filePath).metadata();
+  if (meta.format) return `image/${meta.format}`;
+  throw new Error("Unsupported file type");
+}
+
 async function processPDF(filePath) {
-  const pdfBytes = await fs.readFile(filePath);
-  const pdfDoc = await PDFDocument.load(pdfBytes);
-  const pageCount = pdfDoc.getPageCount();
+  const converter = fromPath(filePath, {
+    density: 300,
+    saveFilename: "page",
+    format: "jpeg", // explicitly set to jpeg
+    width: 1500,
+    height: 2000,
+  });
+
+  const totalPages = await getPdfPageCount(filePath);
   let extractedText = "";
 
-  for (let i = 0; i < pageCount; i++) {
-    // Convert PDF page to image
-    const page = pdfDoc.getPages()[i];
-    const { width, height } = page.getSize();
+  for (let i = 1; i <= totalPages; i++) {
+    try {
+      const { path: imagePath } = await converter(i, { responseType: "image" });
+      const imageBuffer = await fs.readFile(imagePath);
+      const pageText = await extractTextFromBuffer(imageBuffer);
+      extractedText += `\n--- Page ${i} ---\n${pageText}\n`;
 
-    // Save page as PNG using sharp
-    const pageImage = await sharp(Buffer.from(await page.toPng()))
-      .resize(1500, null, {
-        // Resize to reasonable width while maintaining aspect ratio
-        withoutEnlargement: true,
-      })
-      .toBuffer();
-
-    // Process the page image with GPT-4 Vision
-    const pageText = await extractTextFromImage(pageImage);
-    extractedText += `\n--- Page ${i + 1} ---\n${pageText}\n`;
+      // Clean up temporary image file
+      await fs.unlink(imagePath);
+    } catch (error) {
+      console.error(`Error processing page ${i}:`, error);
+      throw new Error(`Failed processing page ${i}: ${error.message}`);
+    }
   }
 
   return extractedText.trim();
 }
 
-/**
- * Process an image file
- * @param {string} filePath Path to the image file
- * @returns {Promise<string>} Extracted text from the image
- */
 async function processImage(filePath) {
-  // Optimize image before sending to GPT-4 Vision
-  const optimizedImage = await sharp(filePath)
-    .resize(1500, null, {
-      // Resize to reasonable width while maintaining aspect ratio
-      withoutEnlargement: true,
-    })
+  const imageBuffer = await sharp(filePath)
+    .resize(1500, null, { withoutEnlargement: true })
+    .jpeg({ quality: 90 })
     .toBuffer();
 
-  return await extractTextFromImage(optimizedImage);
+  return await extractTextFromBuffer(imageBuffer);
 }
 
-/**
- * Extract text from an image using GPT-4 Vision API
- * @param {Buffer} imageBuffer Image buffer to process
- * @returns {Promise<string>} Extracted text from the image
- */
-async function extractTextFromImage(imageBuffer) {
-  try {
-    const base64Image = imageBuffer.toString("base64");
+async function extractTextFromBuffer(imageBuffer) {
+  const base64Image = imageBuffer.toString("base64");
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Extract all screenplay/script text from the provided image clearly and accurately. Preserve formatting where possible (scene headings, actions, character dialogue, parentheticals).",
+  const response = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Extract all screenplay/script text from this image accurately, preserving formatting.",
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:image/jpeg;base64,${base64Image}`,
             },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Image}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 4096,
-    });
+          },
+        ],
+      },
+    ],
+    max_tokens: 4096,
+  });
 
-    return response.choices[0]?.message?.content || "";
-  } catch (error) {
-    console.error("Error in extractTextFromImage:", error);
-    throw new Error("Failed to extract text from image");
-  }
+  return response.choices[0]?.message?.content || "";
 }
 
-/**
- * Get the MIME type of a file
- * @param {string} filePath Path to the file
- * @returns {Promise<string>} MIME type of the file
- */
-async function getMimeType(filePath) {
-  const fileInfo = await sharp(filePath).metadata();
-  if (fileInfo.format) {
-    return `image/${fileInfo.format}`;
-  }
-
-  // Check if it's a PDF by reading the first few bytes
-  const buffer = await fs.readFile(filePath, { length: 4 });
-  if (buffer.toString("hex").startsWith("25504446")) {
-    return "application/pdf";
-  }
-
-  throw new Error("Unsupported file type");
+async function getPdfPageCount(filePath) {
+  const pdfData = await fs.readFile(filePath);
+  const match = pdfData.toString().match(/\/Type\s*\/Page\b/g);
+  return match ? match.length : 1; // Fallback to at least 1 page
 }

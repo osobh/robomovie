@@ -12,6 +12,9 @@ interface UploadProgress {
   fileName: string;
   status: "uploading" | "processing" | "complete" | "error";
   progress: number;
+  currentPage?: number;
+  totalPages?: number;
+  stage?: string;
   error?: string;
   textPath?: string;
 }
@@ -251,7 +254,19 @@ export function BulkUploadTab() {
                 )}
               </div>
 
-              <Progress value={progress.progress} className="h-1" />
+              <div className="space-y-1">
+                <Progress value={progress.progress} className="h-1" />
+                {progress.status === "processing" && progress.stage && (
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>{progress.stage}</span>
+                    {progress.currentPage && progress.totalPages && (
+                      <span>
+                        Page {progress.currentPage} of {progress.totalPages}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {progress.status === "error" && progress.error && (
                 <p className="text-sm text-red-500">{progress.error}</p>

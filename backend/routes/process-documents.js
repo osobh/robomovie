@@ -117,8 +117,20 @@ router.post(
         textPath: null,
       });
 
-      // Start processing in background
-      processFile(jobId, uploadPath, extractedTextPath, userId, req.file);
+      // Start processing in background with progress updates
+      processFile(
+        jobId,
+        uploadPath,
+        extractedTextPath,
+        userId,
+        req.file,
+        (progress) => {
+          processingJobs.set(jobId, {
+            ...progress,
+            textPath: extractedTextPath,
+          });
+        }
+      );
 
       // Return job ID immediately
       res.json({ jobId });
@@ -154,8 +166,15 @@ async function processFile(jobId, filePath, extractedTextPath, userId, file) {
       textPath: null,
     });
 
-    // Process with GPT-4 Vision
-    const extractedText = await processWithGPT4Vision(filePath);
+    // Process with GPT-4 Vision and track progress
+    const extractedText = await processWithGPT4Vision(filePath, (progress) => {
+      processingJobs.set(jobId, {
+        status: "processing",
+        ...progress,
+        error: null,
+        textPath: null,
+      });
+    });
 
     // Save extracted text
     await fs.writeFile(extractedTextPath, extractedText);
